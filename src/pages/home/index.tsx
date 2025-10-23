@@ -1,5 +1,7 @@
 import React, {useEffect, memo} from "react";
-import {useNavigate} from "react-router";
+import {useNavigate, Outlet} from "react-router";
+import {Flex} from "antd";
+import "./index.scss"
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -9,10 +11,13 @@ const Home: React.FC = () => {
     }, []);
 
     return (
-        <>
-            <h1>hello Home</h1>
-            <h1 onClick={() => navigate("/setting")}>goto Setting</h1>
-        </>
+        <Flex id="cloudNoteHome">
+            <Flex className="sidebar">侧边栏</Flex>
+            <Flex className="content">
+                编辑区域
+                <Outlet />
+            </Flex>
+        </Flex>
     );
 };
 

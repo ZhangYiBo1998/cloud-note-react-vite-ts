@@ -2,11 +2,17 @@
 import {
     createBrowserRouter,
 } from "react-router";
+import Home from "../pages/home";
+import Setting from "../pages/setting";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <div>Hello World !!</div>,
+        element: <Home />,
+    },
+    {
+        path: "/setting",
+        element: <Setting />,
     },
 ]);
 

@@ -1,13 +1,11 @@
 import React, { useState,  memo} from "react";
 import {Flex, type GetProps, Input, Select, Space} from "antd";
-import {useNavigate} from "react-router";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
 const {Search} = Input;
 
-const Header: React.FC = () => {
-    const navigate = useNavigate();
+const NoteSearch: React.FC = () => {
 
     // 搜索类型
     const [searchType, setSearchType] = useState('title');
@@ -33,13 +31,7 @@ const Header: React.FC = () => {
     ];
 
     return (
-        <Flex className="header">
-            <Flex className="left flex-shrink-0" align="center">
-                <Flex className="logo" justify="center" align="center" onClick={() => navigate("/")}>
-                    <img src="src/assets/icon.png" alt=""/>
-                </Flex>
-                <Flex className="title">Cloud Note</Flex>
-            </Flex>
+        <Flex className="header" justify="center">
             <Flex className="right" justify="center" align="center" style={{padding: "0 20px"}}>
                 <Space.Compact>
                     <Select style={{width: '100px'}} options={options} value={searchType}
@@ -51,4 +43,4 @@ const Header: React.FC = () => {
     );
 };
 
-export default memo(Header);
+export default memo(NoteSearch);

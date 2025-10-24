@@ -1,32 +1,18 @@
 import React, {useEffect, memo, useState} from "react";
 import {useNavigate} from "react-router";
 import {Card, Switch, Form} from 'antd';
-import EventEmitter from "../../utils/eventBus";
 
 const Setting: React.FC = () => {
     const navigate = useNavigate();
     const [autoLaunchValue, setAutoLaunchValue] = useState(false);
 
     useEffect(() => {
-        const eventBus = new EventEmitter();
-        const unsubscribe = eventBus.on('toHome', () => {
-            navigate('/');
-        });
-
-        return () => {
-            unsubscribe();
-        }
-    }, []);
-
-    useEffect(() => {
         window.electronAPI.getAutoLaunch().then(enabled => {
-            console.log("getAutoLaunch enabled", enabled);
             setAutoLaunchValue(enabled)
         })
     }, []);
 
     const setAutoLaunchHandler = (checked: boolean) => {
-        console.log('setAutoLaunchHandler', checked);
         setAutoLaunchValue(checked);
         window.electronAPI?.setAutoLaunch(checked)
     }

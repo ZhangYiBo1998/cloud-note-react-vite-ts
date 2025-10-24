@@ -4,6 +4,7 @@ export interface IElectronAPI {
     hideWindow(): void;
     setAutoLaunch(bool: boolean): void;
     getAutoLaunch(): Promise<boolean>;
+    findFiles(value: string, type: string): Promise<any[]>;
 }
 
 declare global {

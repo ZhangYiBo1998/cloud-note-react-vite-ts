@@ -1,15 +1,12 @@
 import React from 'react';
-import {
-    RouterProvider,
-} from "react-router";
-import router from "./router";
+import {Outlet} from "react-router";
 import SystemHeader from "./components/SystemHeader";
 import './App.css'
 
 const App: React.FC = () => {
     return (
         <SystemHeader>
-            <RouterProvider router={router}/>
+            <Outlet/>
         </SystemHeader>
     )
 }

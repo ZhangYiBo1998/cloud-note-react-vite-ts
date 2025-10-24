@@ -28,7 +28,6 @@ ipcMain.on('window-close', (event) => {
 
 // 设置开机自启
 ipcMain.handle('set-auto-launch', async (event, enabled) => {
-  console.log('set-auto-launch', enabled);
   app.setLoginItemSettings({
     openAtLogin: enabled,
     path: app.getPath('exe'),
@@ -43,4 +42,10 @@ ipcMain.handle('get-auto-launch', async () => {
     args: ['--hidden']
   })
   return settings.openAtLogin
+})
+
+// 根据搜索条件查找文件
+ipcMain.handle('find-files', async (value, type) => {
+
+  return []
 })

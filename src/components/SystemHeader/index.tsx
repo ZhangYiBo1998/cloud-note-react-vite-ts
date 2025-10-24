@@ -1,4 +1,4 @@
-import React, {memo, useEffect, useRef, useState} from "react";
+import React, {memo, useState} from "react";
 import type {PropsWithChildren} from "react";
 import {
     HomeOutlined,
@@ -7,16 +7,13 @@ import {
     CloseOutlined,
 } from '@ant-design/icons';
 import {Flex} from "antd";
-import EventEmitter from "../../utils/eventBus";
+import {useNavigate} from "react-router";
 
 const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const {children} = props;
-    const [isHome, setIsHome] = useState(true);
-    const eventBusRef = useRef<any>(null);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        eventBusRef.current = new EventEmitter();
-    }, []);
+    const [isHome, setIsHome] = useState(true);
 
     return (
         <Flex vertical style={{height: '100vh'}}>
@@ -27,7 +24,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                             <SettingOutlined
                                 className="no-drag-area"
                                 onClick={() => {
-                                    eventBusRef.current?.emit('toSetting')
+                                    navigate('/setting')
                                     setIsHome(false)
                                 }}
                             />
@@ -35,7 +32,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                             <HomeOutlined
                                 className="no-drag-area"
                                 onClick={() => {
-                                    eventBusRef.current?.emit('toHome')
+                                    navigate(-1)
                                     setIsHome(true)
                                 }}
                             />

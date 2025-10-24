@@ -46,6 +46,6 @@ ipcMain.handle('get-auto-launch', async () => {
 
 // 根据搜索条件查找文件
 ipcMain.handle('find-files', async (value, type) => {
-
+  console.log('find-files', value, type);
   return []
 })

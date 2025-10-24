@@ -1,11 +1,11 @@
 
 import {
-    createBrowserRouter,
+    createHashRouter,
 } from "react-router";
 import Home from "../pages/home";
 import Setting from "../pages/setting";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
     {
         path: "/",
         element: <Home />,

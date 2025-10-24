@@ -38,6 +38,24 @@ function createWindow() {
       contextIsolation: true,
     }
   });
+  // 创建系统底部托盘菜单
+  createSystemMenu(mainWindow);
+
+  const DEFAULT_KEY_BINDING = 'Alt+Space';
+
+  // 注销快捷键
+  // globalShortcut.unregister(DEFAULT_KEY_BINDING)
+  // 监听快捷键
+  globalShortcut.register(DEFAULT_KEY_BINDING, () => {
+    // 显示主窗口
+    showMainWindow(mainWindow)
+  })
+
+  // 检查启动参数，决定是否显示窗口
+  const shouldHideWindow = process.argv.includes('--hidden')
+  if (shouldHideWindow) {
+    return;
+  }
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
@@ -45,18 +63,6 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist', 'index.html'));
   }
 
-  const DEFAULT_KEY_BINDING = 'Alt+Space';
-
-  // 注销快捷键
-  // globalShortcut.unregister(DEFAULT_KEY_BINDING)
-
-  // 监听快捷键
-  globalShortcut.register(DEFAULT_KEY_BINDING, () => {
-    // 显示主窗口
-    showMainWindow(mainWindow)
-  })
-  // 创建系统底部托盘菜单
-  createSystemMenu(mainWindow);
 }
 
 // 创建系统底部托盘菜单
@@ -64,7 +70,7 @@ const createSystemMenu = (win) => {
   const icon = nativeImage.createFromPath(path.join(__dirname, '../src/assets/icon.png'))
   const iconWhite = nativeImage.createFromPath(path.join(__dirname, '../src/assets/icon-white.png'))
 
-  let tray = null;
+  let tray;
   // 检查当前系统是否使用深色主题
   if (nativeTheme.shouldUseDarkColors) {
     tray = new Tray(icon);
@@ -86,6 +92,12 @@ const createSystemMenu = (win) => {
 
 
 app.whenReady().then(() => {
+  // 设置开机自启动
+  app.setLoginItemSettings({
+    openAtLogin: true,
+    path: app.getPath('exe'),
+    args: ['--hidden'] // 添加自定义参数
+  })
   createWindow();
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) {

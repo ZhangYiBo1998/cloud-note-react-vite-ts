@@ -21,7 +21,7 @@ const Home: React.FC = () => {
                     <Flex className="search">搜索</Flex>
                 </Flex>
             </Flex>
-            <Flex className="container">
+            <Flex className="container heigth-100" >
                 <Flex className="sidebar">侧边栏</Flex>
                 <Flex className="content">
                     编辑区域

@@ -1,0 +1,27 @@
+div {
+    border: 1px solid black;
+}
+
+body {
+    margin: 0;
+}
+
+.warning {
+    color: #e61313;
+}
+
+.link {
+    color: #36B6F5;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.drag-area {
+    -webkit-app-region: drag;
+}
+
+.heigth-100 {
+    height: 100%;
+}

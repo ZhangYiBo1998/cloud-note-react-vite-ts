@@ -2,16 +2,21 @@ const path = require('path');
 const {
   app,
   BrowserWindow,
-  ipcMain,
-  dialog,
   globalShortcut,
   Tray,
   Menu,
   MenuItem,
   nativeTheme,
 } = require('electron');
-const {nativeImage} = require('electron/common')
+const {
+  nativeImage,
+} = require('electron/common');
+const {
+  showMainWindow,
+} = require(path.join(__dirname, './utils/tools.js'));
+require(path.join(__dirname, './ipcMainHandlers/index.js'));
 
+// 主要用于处理 Windows 平台上 Electron 应用的安装、更新和卸载过程中的一些特殊事件，确保这些过程能顺畅进行。
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
@@ -54,20 +59,6 @@ function createWindow() {
   createSystemMenu(mainWindow);
 }
 
-// 显示主窗口
-const showMainWindow = (win) => {
-  win.show();
-  win.setSkipTaskbar(false);
-  win.focus();
-}
-
-// 隐藏主窗口
-const hideMainWindow = (win) => {
-  win.hide();
-  win.setSkipTaskbar(true);
-}
-
-
 // 创建系统底部托盘菜单
 const createSystemMenu = (win) => {
   const icon = nativeImage.createFromPath(path.join(__dirname, '../src/assets/icon.png'))
@@ -108,19 +99,3 @@ app.on('window-all-closed', function () {
     app.quit();
   }
 });
-
-// 最小化到托盘
-ipcMain.on('window-hide', (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender)
-  hideMainWindow(win);
-})
-
-// 处理窗口控制操作的IPC监听器
-ipcMain.on('window-minimize', (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender)
-  win.minimize()
-})
-ipcMain.on('window-close', (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender)
-  win.close()
-})

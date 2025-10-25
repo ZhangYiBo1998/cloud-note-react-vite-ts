@@ -32,3 +32,21 @@ body {
 .scrollable {
     overflow-y: auto;
 }
+
+/* 简约风格 */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #abb1b6;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #8e9397;
+}

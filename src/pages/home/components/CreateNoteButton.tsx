@@ -12,22 +12,37 @@ const Icon = (props: { src: string }) => {
     )
 }
 
-const App: React.FC = () => (
-    <>
-        <FloatButton.Group
-            trigger="click"
-            type="primary"
-            style={{bottom: 24}}
-            icon={<PlusOutlined/>}
-        >
-            <Tooltip title="普通文本">
-                <FloatButton icon={<Icon src={IconTxt}/>}/>
-            </Tooltip>
-            <Tooltip title="富文本">
-                <FloatButton/>
-            </Tooltip>
-        </FloatButton.Group>
-    </>
-);
+const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void}> = (props) => {
+    const {
+        onChange,
+    } = props;
 
-export default App;
+    return (
+        <>
+            <FloatButton.Group
+                trigger="click"
+                type="primary"
+                style={{bottom: 24}}
+                icon={<PlusOutlined/>}
+            >
+                <Tooltip title="普通文本">
+                    <FloatButton
+                        icon={<Icon src={IconTxt}/>}
+                        onClick={() => {
+                            onChange('txt')
+                        }}
+                    />
+                </Tooltip>
+                <Tooltip title="富文本">
+                    <FloatButton
+                        onClick={() => {
+                            onChange('richTxt')
+                        }}
+                    />
+                </Tooltip>
+            </FloatButton.Group>
+        </>
+    )
+};
+
+export default CreateNoteButton;

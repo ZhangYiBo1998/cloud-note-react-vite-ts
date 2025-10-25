@@ -32,12 +32,12 @@
 
     .sidebar {
       width: 160px;
-      height: 100%;
+      height: calc(100vh - 86px);
     }
 
     .content {
       width: calc(100% - 160px);
-      height: 100%;
+      height: calc(100vh - 86px);
     }
   }
 

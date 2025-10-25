@@ -2,12 +2,14 @@
 * doc: https://nhn.github.io/tui.editor/latest/
 * */
 
-import React, {useEffect, useState, useRef, memo} from "react";
+import React, {useEffect, useRef, memo} from "react";
+// @ts-expect-error 隐藏ts错误
 import Editor from '@toast-ui/editor';
 import '@toast-ui/chart/dist/toastui-chart.css';
 import chart from '@toast-ui/editor-plugin-chart';
 import 'prismjs/themes/prism.css';
 import '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css';
+// @ts-expect-error 隐藏ts错误
 import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight-all.js';
 import 'tui-color-picker/dist/tui-color-picker.css';
 import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css';
@@ -18,9 +20,17 @@ import uml from '@toast-ui/editor-plugin-uml';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import '@toast-ui/editor/dist/i18n/zh-cn';
 
-const ToastUIEditor: React.FC = (props) => {
-    const editorDomRef = useRef();
-    const editorInsRef = useRef();
+interface IEditorProps {
+    getMarkdown: () => string;
+    getHtml: () => string;
+    setMarkdown: (markdown: string) => void;
+    setHtml: (html: string) => void;
+    destroy: () => void;
+}
+
+const ToastUIEditor: React.FC = () => {
+    const editorDomRef = useRef<HTMLDivElement | null>(null);
+    const editorInsRef = useRef<IEditorProps>({} as IEditorProps);
 
     useEffect(() => {
         editorInsRef.current = new Editor({
@@ -39,7 +49,7 @@ const ToastUIEditor: React.FC = (props) => {
                 uml,
             ],
             events: {
-                change: (type) => {
+                change: (type: string) => {
                     if (type === 'markdown') {
                         console.log('change', editorInsRef.current.getMarkdown());
                     } else {

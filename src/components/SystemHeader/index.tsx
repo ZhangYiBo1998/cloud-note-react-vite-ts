@@ -1,4 +1,4 @@
-import React, {memo, useState} from "react";
+import React, {memo, useContext, useState} from "react";
 import type {PropsWithChildren} from "react";
 import {
     HomeOutlined,
@@ -8,9 +8,14 @@ import {
 } from '@ant-design/icons';
 import {Flex} from "antd";
 import {useNavigate} from "react-router";
+import {
+    SettingsContext,
+} from "../../utils/context";
 
 const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const {children} = props;
+    // 获取配置项
+    const {settings} = useContext(SettingsContext);
     const navigate = useNavigate();
 
     const [isHome, setIsHome] = useState(true);
@@ -45,7 +50,18 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                         onClick={() => window.electronAPI?.hideWindow()}
                     />
                     <CloseOutlined
-                        className="no-drag-area" onClick={() => window.electronAPI?.closeWindow()}
+                        className="no-drag-area"
+                        onClick={() => {
+                            if (settings.closeType === 'hide') {
+                                window.electronAPI?.hideWindow();
+                                return;
+                            }
+
+                            if (settings.closeType === 'quit') {
+                                window.electronAPI?.closeWindow();
+                                return;
+                            }
+                        }}
                     />
                 </Flex>
             </Flex>

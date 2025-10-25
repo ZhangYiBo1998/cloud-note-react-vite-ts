@@ -1,8 +1,12 @@
-import React, {useEffect, memo, useState} from "react";
+import React, {useEffect, memo, useState, useContext} from "react";
 import {useNavigate} from "react-router";
 import {Card, Switch, Form} from 'antd';
+import {
+    SettingsContext,
+} from "../../utils/context";
 
 const Setting: React.FC = () => {
+    const {settings, setSettings} = useContext(SettingsContext);
     const navigate = useNavigate();
     const [autoLaunchValue, setAutoLaunchValue] = useState(false);
 
@@ -26,6 +30,9 @@ const Setting: React.FC = () => {
             <Form>
                 <Form.Item label="开机自启">
                     <Switch value={autoLaunchValue} onChange={setAutoLaunchHandler}/>
+                </Form.Item>
+                <Form.Item label="关闭应用时最小化到系统托盘">
+                    <Switch value={settings.closeType === 'hide'} onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
                 </Form.Item>
             </Form>
         </Card>

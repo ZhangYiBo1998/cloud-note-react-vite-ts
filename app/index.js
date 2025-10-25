@@ -124,3 +124,8 @@ app.on('window-all-closed', function () {
     app.quit();
   }
 });
+
+// 应用即将退出时，注销所有快捷键
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});

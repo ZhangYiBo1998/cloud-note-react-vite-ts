@@ -1,7 +1,6 @@
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
-import {FloatButton, Tooltip} from 'antd';
-import IconTxt from "../../../assets/icon-txt.svg";
+import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
 import IconMD from "../../../assets/icon-markdown.svg";
 
 const Icon = (props: { src: string }) => {
@@ -13,10 +12,44 @@ const Icon = (props: { src: string }) => {
     )
 }
 
+interface IFieldValues {
+    group: string;
+}
+
 const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (props) => {
     const {
         onChange,
     } = props;
+    const [form] = Form.useForm();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const typeRef = useRef('');
+
+    const floatButtonList = [
+        {
+            id: 'Md',
+            label: 'Markdown文件',
+            icon: <Icon src={IconMD}/>,
+            onClick: () => {
+                typeRef.current = 'Md';
+                setIsModalOpen(true);
+            },
+        },
+        {
+            id: 'txt',
+            label: '普通文本',
+            onClick: () => {
+                typeRef.current = 'txt';
+                setIsModalOpen(true);
+            },
+        },
+    ]
+
+    const groupOptions = [
+        {
+            label: '默认分组',
+            value: 'default',
+        }
+    ]
 
     return (
         <>
@@ -26,30 +59,55 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 style={{bottom: 24}}
                 icon={<PlusOutlined/>}
             >
-                <Tooltip title="Markdown文件" placement="left">
-                    <FloatButton
-                        icon={<Icon src={IconMD}/>}
-                        onClick={() => {
-                            onChange('Md')
-                        }}
-                    />
-                </Tooltip>
-                <Tooltip title="富文本" placement="left">
-                    <FloatButton
-                        onClick={() => {
-                            onChange('richTxt')
-                        }}
-                    />
-                </Tooltip>
-                <Tooltip title="普通文本" placement="left">
-                    <FloatButton
-                        icon={<Icon src={IconTxt}/>}
-                        onClick={() => {
-                            onChange('txt')
-                        }}
-                    />
-                </Tooltip>
+                {
+                    floatButtonList.map((item) => {
+                        return (
+                            <Tooltip key={item.id} title={item.label} placement="left">
+                                <FloatButton
+                                    icon={item.icon}
+                                    onClick={item.onClick}
+                                />
+                            </Tooltip>
+                        )
+                    })
+                }
             </FloatButton.Group>
+            <Modal
+                title="新建"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={isModalOpen}
+                footer={null}
+            >
+                <Form 
+                    form={form}
+                    onFinish={(values) => {
+                        console.log(values);
+                        onChange(typeRef.current);
+                        setIsModalOpen(false);
+
+                    }}
+                    initialValues={{
+                        group: 'default',
+                    }}
+                >
+                    <Form.Item<IFieldValues>
+                        label="分组"
+                        name="group"
+                    >
+                        <Select options={groupOptions} />
+                    </Form.Item>
+                    <Flex justify="flex-end">
+                        <Space>
+                            <Button onClick={() => setIsModalOpen(false)}>
+                                取消
+                            </Button>
+                            <Button type="primary" htmlType="submit">
+                                确定
+                            </Button>
+                        </Space>
+                    </Flex>
+                </Form>
+            </Modal>
         </>
     )
 };

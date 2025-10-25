@@ -11,8 +11,8 @@ const NoteGroups: React.FC = () => {
 
     const items: MenuItem[] = [
         {
-            key: 'sub1',
-            label: 'Navigation One',
+            key: 'group1',
+            label: '默认分组',
             children: [
                 {
                     key: 'g1',

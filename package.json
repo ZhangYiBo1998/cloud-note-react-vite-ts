@@ -13,12 +13,12 @@
     "start": "npm run build && npm run electron:start",
     "dev": "concurrently -k \"vite\" \"npm run electron:dev\"",
     "build": "vite build",
-    "build-package": "yarn build && yarn package",
     "preview": "vite preview",
     "electron:start": "cross-env IS_DEV=false electron-forge start",
     "electron:dev": "cross-env IS_DEV=true electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "app": "npm run build && npm run package"
   },
   "dependencies": {
     "@ant-design/icons": "5.x",

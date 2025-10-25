@@ -26,11 +26,11 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 style={{bottom: 24}}
                 icon={<PlusOutlined/>}
             >
-                <Tooltip title="普通文本" placement="left">
+                <Tooltip title="Markdown文件" placement="left">
                     <FloatButton
-                        icon={<Icon src={IconTxt}/>}
+                        icon={<Icon src={IconMD}/>}
                         onClick={() => {
-                            onChange('txt')
+                            onChange('Md')
                         }}
                     />
                 </Tooltip>
@@ -41,11 +41,11 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                         }}
                     />
                 </Tooltip>
-                <Tooltip title="Markdown文件" placement="left">
+                <Tooltip title="普通文本" placement="left">
                     <FloatButton
-                        icon={<Icon src={IconMD}/>}
+                        icon={<Icon src={IconTxt}/>}
                         onClick={() => {
-                            onChange('Md')
+                            onChange('txt')
                         }}
                     />
                 </Tooltip>

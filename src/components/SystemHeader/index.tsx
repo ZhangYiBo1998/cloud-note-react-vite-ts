@@ -22,7 +22,10 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
 
     return (
         <Flex vertical style={{height: '100vh'}}>
-            <Flex className="drag-area" justify="space-between" style={{padding: '10px 15px'}}>
+            <Flex
+                className="drag-area" justify="space-between"
+                style={{height: '36px', padding: '10px 15px', backgroundColor: '#7ed0f6'}}
+            >
                 <Flex>
                     {
                         isHome ? (

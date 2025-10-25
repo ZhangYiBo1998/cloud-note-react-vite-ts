@@ -13,6 +13,7 @@ const {
 } = require('electron/common');
 const {
   showMainWindow,
+  hideMainWindow,
 } = require(path.join(__dirname, './utils/tools.js'));
 require(path.join(__dirname, './ipcMainHandlers/index.js'));
 
@@ -25,6 +26,7 @@ const isDev = process.env.IS_DEV === 'true';
 
 // 创建主窗口
 function createWindow() {
+  // 创建浏览器窗口
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -47,20 +49,23 @@ function createWindow() {
   // globalShortcut.unregister(DEFAULT_KEY_BINDING)
   // 监听快捷键
   globalShortcut.register(DEFAULT_KEY_BINDING, () => {
-    // 显示主窗口
-    showMainWindow(mainWindow)
+    if (mainWindow.isVisible()) {
+      hideMainWindow(mainWindow)
+    } else {
+      showMainWindow(mainWindow)
+    }
   })
 
-  // 检查启动参数，决定是否显示窗口
-  const shouldHideWindow = process.argv.includes('--hidden')
-  if (shouldHideWindow) {
-    return;
-  }
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist', 'index.html'));
+  }
+  // 检查启动参数，决定是否显示窗口
+  const shouldHideWindow = process.argv.includes('--hidden')
+  if (shouldHideWindow) {
+    hideMainWindow(mainWindow);
   }
 
 }
@@ -92,13 +97,8 @@ const createSystemMenu = (win) => {
 
 
 app.whenReady().then(() => {
-  // 设置开机自启动
-  app.setLoginItemSettings({
-    openAtLogin: true,
-    path: app.getPath('exe'),
-    args: ['--hidden'] // 添加自定义参数
-  })
   createWindow();
+  // macOS 特有行为：处理点击 Dock 图标时的响应
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -106,7 +106,12 @@ app.whenReady().then(() => {
   });
 
 });
+
+// 退出应用
 app.on('window-all-closed', function () {
+  // 跨平台差异处理：
+  // Windows/Linux：所有窗口关闭 = 退出应用
+  // macOS：所有窗口关闭 ≠ 退出应用（应用仍在 Dock 中运行）
   if (process.platform !== 'darwin') {
     app.quit();
   }

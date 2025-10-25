@@ -31,14 +31,12 @@ const NoteSearch: React.FC = () => {
     ];
 
     return (
-        <Flex className="header" justify="center">
-            <Flex className="right" justify="center" align="center" style={{padding: "0 20px"}}>
-                <Space.Compact>
-                    <Select style={{width: '100px'}} options={options} value={searchType}
-                            onChange={(value) => setSearchType(value)}/>
-                    <Search style={{width: '400px'}} placeholder={`根据${searchType}搜索`} onSearch={onSearch}/>
-                </Space.Compact>
-            </Flex>
+        <Flex className="right" justify="center" align="center" style={{padding: "0 20px"}}>
+            <Space.Compact>
+                <Select style={{width: '100px'}} options={options} value={searchType}
+                        onChange={(value) => setSearchType(value)}/>
+                <Search style={{width: '400px'}} placeholder={`根据${searchType}搜索`} onSearch={onSearch}/>
+            </Space.Compact>
         </Flex>
     );
 };

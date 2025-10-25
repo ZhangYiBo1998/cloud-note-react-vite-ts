@@ -17,7 +17,7 @@ const NoteEdit: React.FC = () => {
             <Flex vertical justify="space-between" gap={10} style={{padding: 10}}>
                 <Input placeholder="标题"/>
                 {
-                    editorType === 'txt' && <Input.TextArea placeholder="内容"/>
+                    editorType === 'txt' && <Input.TextArea placeholder="内容" autoSize={{minRows: 17, maxRows: 17}}/>
                 }
             </Flex>
             <CreateNoteButton onChange={(type) => {setEditorType(type)}}/>

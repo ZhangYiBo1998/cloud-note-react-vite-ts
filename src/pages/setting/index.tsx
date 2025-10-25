@@ -1,11 +1,18 @@
 import React, {useEffect, memo, useState, useContext} from "react";
-import {Card, Switch, Form} from 'antd';
+import {Card, Switch, Form, Input} from 'antd';
+import {
+    EllipsisOutlined,
+} from '@ant-design/icons';
 import {
     SettingsContext,
+    ConfigContext,
 } from "../../utils/context";
 
 const Setting: React.FC = () => {
     const {settings, setSettings} = useContext(SettingsContext);
+    const config = useContext(ConfigContext);
+    console.log('config', config);
+    // 开机自启
     const [autoLaunchValue, setAutoLaunchValue] = useState(false);
 
     useEffect(() => {
@@ -19,6 +26,15 @@ const Setting: React.FC = () => {
         window.electronAPI?.setAutoLaunch(checked)
     }
 
+    const selectSaveDirectory = async () => {
+        const dir = await window.electronAPI?.selectSaveDirectory(config.saveDirectory);
+        if (dir) {
+            window.electronAPI.updateConfigJsonAsync({
+                saveDirectory: dir
+            });
+        }
+    }
+
     return (
         <Card title="设置" variant="borderless">
             <Form>
@@ -26,7 +42,11 @@ const Setting: React.FC = () => {
                     <Switch value={autoLaunchValue} onChange={setAutoLaunchHandler}/>
                 </Form.Item>
                 <Form.Item label="关闭应用时最小化到系统托盘">
-                    <Switch value={settings.closeType === 'hide'} onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
+                    <Switch value={settings.closeType === 'hide'}
+                            onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
+                </Form.Item>
+                <Form.Item label="指定存档文件夹">
+                    <Input value={config.saveDirectory} addonAfter={<EllipsisOutlined onClick={selectSaveDirectory}/>}/>
                 </Form.Item>
             </Form>
         </Card>

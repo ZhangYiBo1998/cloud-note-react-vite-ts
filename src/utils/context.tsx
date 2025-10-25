@@ -10,3 +10,6 @@ export interface ISettingsContext {
 }
 
 export const SettingsContext = createContext<ISettingsContext>({} as ISettingsContext);
+
+
+export const ConfigContext = createContext({})

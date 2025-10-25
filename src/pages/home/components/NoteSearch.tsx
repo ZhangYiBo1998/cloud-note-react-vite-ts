@@ -15,8 +15,6 @@ const NoteSearch: React.FC = () => {
         if (!value) {
             return;
         }
-        const result = await window.electronAPI.findFiles(value, searchType)
-        console.log('搜索结果', result);
     };
 
     const options = [

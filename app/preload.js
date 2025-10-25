@@ -1,4 +1,4 @@
-const {contextBridge, ipcRenderer } = require('electron')
+const {contextBridge, ipcRenderer} = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
@@ -6,5 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   hideWindow: () => ipcRenderer.send('window-hide'),
   setAutoLaunch: (checked) => ipcRenderer.invoke('set-auto-launch', checked),
   getAutoLaunch: () => ipcRenderer.invoke('get-auto-launch'),
-  findFiles: (value, type) => ipcRenderer.invoke('find-files', value, type),
+  selectSaveDirectory: (defaultPath) => ipcRenderer.invoke('select-save-directory', defaultPath),
+  getConfigJsonAsync: () => ipcRenderer.invoke('get-config-json-async'),
+  updateConfigJsonAsync: () => ipcRenderer.invoke('update-config-json-async'),
 })

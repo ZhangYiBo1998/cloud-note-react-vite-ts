@@ -3,6 +3,7 @@ import {Flex,} from "antd";
 import {useNavigate} from "react-router";
 import NoteSearch from "./components/NoteSearch";
 import NoteGroups from "./components/NoteGroups";
+import CreateNoteButton from "./components/CreateNoteButton";
 import "./index.scss"
 
 const Home: React.FC = () => {
@@ -25,6 +26,7 @@ const Home: React.FC = () => {
                 <Flex className="content" vertical>
                     <div className="scrollable">
                         编辑区域
+                        <CreateNoteButton/>
                     </div>
                 </Flex>
             </Flex>

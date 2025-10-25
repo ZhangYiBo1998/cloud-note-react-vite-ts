@@ -92,7 +92,15 @@ const createSystemMenu = (win) => {
   menu.append(new MenuItem({label: '设置'}))
   menu.append(new MenuItem({label: '退出', role: 'quit'}))
   Menu.setApplicationMenu(menu)
-  tray.setContextMenu(menu)
+  tray.setContextMenu(menu);
+
+  tray.on('click', () => {
+    if (win.isVisible()) {
+      hideMainWindow(win)
+    } else {
+      showMainWindow(win)
+    }
+  })
 }
 
 

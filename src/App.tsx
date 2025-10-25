@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Outlet} from "react-router";
+import '@ant-design/v5-patch-for-react-19';
 import SystemHeader from "./components/SystemHeader";
 import {
     SettingsContext,

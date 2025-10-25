@@ -4,6 +4,7 @@ import {useNavigate} from "react-router";
 import NoteSearch from "./components/NoteSearch";
 import NoteGroups from "./components/NoteGroups";
 import NoteEdit from "./components/NoteEdit";
+import Logo from "../../assets/logo.png";
 import "./index.scss"
 
 const Home: React.FC = () => {
@@ -13,7 +14,7 @@ const Home: React.FC = () => {
             <Flex className="header">
                 <Flex className="left flex-shrink-0" align="center">
                     <Flex className="logo" justify="center" align="center" onClick={() => navigate("/")}>
-                        <img src="src/assets/icon.png" alt=""/>
+                        <img src={Logo} alt=""/>
                     </Flex>
                     <Flex className="title">Cloud Note</Flex>
                 </Flex>

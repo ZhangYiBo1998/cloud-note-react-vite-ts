@@ -72,8 +72,8 @@ function createWindow() {
 
 // 创建系统底部托盘菜单
 const createSystemMenu = (win) => {
-  const icon = nativeImage.createFromPath(path.join(__dirname, '../src/assets/icon.png'))
-  const iconWhite = nativeImage.createFromPath(path.join(__dirname, '../src/assets/icon-white.png'))
+  const icon = nativeImage.createFromPath(path.join(__dirname, '../src/assets/logo.png'))
+  const iconWhite = nativeImage.createFromPath(path.join(__dirname, '../src/assets/logo-white.png'))
 
   let tray;
   // 检查当前系统是否使用深色主题

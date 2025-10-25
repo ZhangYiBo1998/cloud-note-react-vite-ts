@@ -2,6 +2,7 @@ import React from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {FloatButton, Tooltip} from 'antd';
 import IconTxt from "../../../assets/icon-txt.svg";
+import IconMD from "../../../assets/icon-markdown.svg";
 
 const Icon = (props: { src: string }) => {
     const {src} = props;
@@ -12,7 +13,7 @@ const Icon = (props: { src: string }) => {
     )
 }
 
-const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void}> = (props) => {
+const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (props) => {
     const {
         onChange,
     } = props;
@@ -25,7 +26,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void}> = (pro
                 style={{bottom: 24}}
                 icon={<PlusOutlined/>}
             >
-                <Tooltip title="普通文本">
+                <Tooltip title="普通文本" placement="left">
                     <FloatButton
                         icon={<Icon src={IconTxt}/>}
                         onClick={() => {
@@ -33,10 +34,18 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void}> = (pro
                         }}
                     />
                 </Tooltip>
-                <Tooltip title="富文本">
+                <Tooltip title="富文本" placement="left">
                     <FloatButton
                         onClick={() => {
                             onChange('richTxt')
+                        }}
+                    />
+                </Tooltip>
+                <Tooltip title="Markdown文件" placement="left">
+                    <FloatButton
+                        icon={<Icon src={IconMD}/>}
+                        onClick={() => {
+                            onChange('Md')
                         }}
                     />
                 </Tooltip>

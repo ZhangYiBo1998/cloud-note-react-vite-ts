@@ -1,9 +1,8 @@
 import React, {memo} from "react";
 import {Flex,} from "antd";
-import {useNavigate} from "react-router";
+import {useNavigate, Outlet} from "react-router";
 import NoteSearch from "./components/NoteSearch";
 import NoteGroups from "./components/NoteGroups";
-import NoteEdit from "./components/NoteEdit";
 import Logo from "../../assets/logo.png";
 import "./index.scss"
 
@@ -25,7 +24,7 @@ const Home: React.FC = () => {
                     <NoteGroups/>
                 </Flex>
                 <Flex className="content" vertical>
-                    <NoteEdit/>
+                    <Outlet/>
                 </Flex>
             </Flex>
         </Flex>

@@ -3,7 +3,8 @@ import {
     Input,
     Flex,
 } from "antd";
-import CreateNoteButton from "./CreateNoteButton";
+import CreateNoteButton from "./components/CreateNoteButton";
+import ToastUIEditor from "../../components/ToastUIEditor";
 
 const NoteEdit: React.FC = () => {
     const [editorType, setEditorType] = useState('txt');
@@ -19,8 +20,15 @@ const NoteEdit: React.FC = () => {
                 {
                     editorType === 'txt' && <Input.TextArea placeholder="内容" autoSize={{minRows: 17, maxRows: 17}}/>
                 }
+                {
+                    editorType === 'Md' && <ToastUIEditor/>
+                }
             </Flex>
-            <CreateNoteButton onChange={(type) => {setEditorType(type)}}/>
+            <CreateNoteButton
+                onChange={(type) => {
+                    setEditorType(type)
+                }}
+            />
         </div>
     );
 };

@@ -30,16 +30,6 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    minWidth: 800,
-    minHeight: 600,
-    maxWidth: 800,
-    maxHeight: 600,
-    // 禁止用户调整窗口大小
-    resizable: false,
-    // 禁用最大化按钮和功能
-    maximizable: false,
-    // 禁止全屏
-    fullscreenable: false,
     // 完全隐藏标题栏和边框
     frame: false,
     webPreferences: {

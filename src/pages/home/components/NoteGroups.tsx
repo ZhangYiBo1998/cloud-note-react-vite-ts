@@ -1,10 +1,13 @@
 import React, {memo} from "react";
 import {Menu} from "antd";
 import type {MenuProps} from 'antd';
+import {useNavigate} from "react-router";
+
 
 type MenuItem = Required<MenuProps>['items'][number];
 
 const NoteGroups: React.FC = () => {
+    const navigate = useNavigate();
 
     const items: MenuItem[] = [
         {
@@ -47,6 +50,7 @@ const NoteGroups: React.FC = () => {
 
     const onClick: MenuProps['onClick'] = (e) => {
         console.log('click ', e);
+        navigate(`/home/note/${1}`)
     };
 
     return (

@@ -63,9 +63,33 @@ const getConfigJsonAsync = async (event) => {
   if (await isFileExistAsync(configFilePath)) {
     configValue = await readFileAsync(configFilePath) || '{}';
   } else {
-    await createFileAsync(configFilePath, JSON.stringify({
+    const defaultConfigValue = JSON.stringify({
       saveDirectory: path.join(documentsDir, 'cloudNote','save'),
-    }))
+      groups: [
+        {
+          key: 'group-default',
+          label: '默认分组',
+          children: [
+            {
+              key: 'group-default-text',
+              label: '默认文本',
+            },
+          ],
+        },
+        {
+          key: 'group-2',
+          label: '分组2',
+          children: [
+            {
+              key: 'group-text-2',
+              label: '文本2',
+            },
+          ],
+        },
+      ],
+    });
+    await createFileAsync(configFilePath, defaultConfigValue)
+    configValue = defaultConfigValue;
   }
   try {
     return JSON.parse(configValue);

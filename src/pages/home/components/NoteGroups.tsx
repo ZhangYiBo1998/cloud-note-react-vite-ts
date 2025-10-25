@@ -1,64 +1,36 @@
-import React, {memo} from "react";
+import React, {memo, useContext, useState} from "react";
 import {Menu} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
-
+import {
+    ConfigContext,
+} from "../../../utils/context";
 
 type MenuItem = Required<MenuProps>['items'][number];
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
+    const config = useContext(ConfigContext);
 
-    const items: MenuItem[] = [
-        {
-            key: 'group1',
-            label: '默认分组',
-            children: [
-                {
-                    key: 'g1',
-                    label: 'Item 1',
-                },
-                {
-                    key: 'g2',
-                    label: 'Item 2',
-                },
-            ],
-        },
-        {
-            key: 'sub2',
-            label: 'Navigation Two',
-            children: [
-                {key: '5', label: 'Option 5'},
-                {key: '6', label: 'Option 6'},
-            ],
-        },
-        {
-            key: 'sub4',
-            label: 'Navigation Three',
-            children: [
-                {key: '9', label: 'Option 9'},
-                {key: '10', label: 'Option 10'},
-                {key: '11', label: 'Option 11'},
-                {key: '12', label: 'Option 12'},
-                {key: '13', label: 'Option 9'},
-                {key: '14', label: 'Option 10'},
-                {key: '15', label: 'Option 11'},
-                {key: '16', label: 'Option 12'},
-            ],
-        },
-    ];
+    const items: MenuItem[] = config.groups || [];
+    const [selectedKeys, setSelectedKeys] = useState([]);
+    const [openKeys, setOpenKeys] = useState([]);
 
-    const onClick: MenuProps['onClick'] = (e) => {
-        console.log('click ', e);
-        navigate(`/home/note/${1}`)
+    const onSelect: MenuProps['onSelect'] = (e) => {
+        setSelectedKeys(e.selectedKeys)
+        navigate(`/home/note/${e.key}`)
+    };
+    const onOpenChange: MenuProps['onOpenChange'] = (_openKeys) => {
+        setOpenKeys(_openKeys)
     };
 
     return (
         <div className="scrollable">
             <Menu
-                onClick={onClick}
-                defaultSelectedKeys={['1']}
-                defaultOpenKeys={['sub1']}
+                onSelect={onSelect}
+                onOpenChange={onOpenChange}
+                selectedKeys={selectedKeys}
+                openKeys={openKeys}
                 mode="inline"
                 items={items}
             />

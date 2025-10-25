@@ -1,7 +1,10 @@
-import React, {useRef, useState} from 'react';
+import React, {useRef, useState, useContext} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
-import IconMD from "../../../assets/icon-markdown.svg";
+import IconMD from "../../../assets/icon-markdown.svg";;
+import {
+    ConfigContext,
+} from "../../../utils/context";
 
 const Icon = (props: { src: string }) => {
     const {src} = props;
@@ -20,6 +23,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
     const {
         onChange,
     } = props;
+    const config = useContext(ConfigContext);
     const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const typeRef = useRef('');
@@ -44,12 +48,12 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
         },
     ]
 
-    const groupOptions = [
-        {
-            label: '默认分组',
-            value: 'default',
+    const groupOptions = (config.groups || []).map((item) => {
+        return {
+            ...item,
+            value: item.key,
         }
-    ]
+    })
 
     return (
         <>
@@ -74,11 +78,11 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             </FloatButton.Group>
             <Modal
                 title="新建"
-                closable={{ 'aria-label': 'Custom Close Button' }}
+                closable={{'aria-label': 'Custom Close Button'}}
                 open={isModalOpen}
                 footer={null}
             >
-                <Form 
+                <Form
                     form={form}
                     onFinish={(values) => {
                         console.log(values);
@@ -94,7 +98,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                         label="分组"
                         name="group"
                     >
-                        <Select options={groupOptions} />
+                        <Select options={groupOptions}/>
                     </Form.Item>
                     <Flex justify="flex-end">
                         <Space>

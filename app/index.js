@@ -22,6 +22,7 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+// 是否是开发环境
 const isDev = process.env.IS_DEV === 'true';
 
 // 创建主窗口
@@ -94,7 +95,7 @@ const createSystemMenu = (win) => {
   Menu.setApplicationMenu(menu)
   tray.setContextMenu(menu);
 
-  tray.on('click', () => {
+  tray.on('double-click', () => {
     if (win.isVisible()) {
       hideMainWindow(win)
     } else {

@@ -31,7 +31,7 @@ const createFileAsync = async (filePath, fileData, options) => {
     // 提取文件所在目录
     const dirName = path.dirname(filePath);
     // 确保目录存在，如果不存在则递归创建
-    await fs.mkdir(dirName, { recursive: true });
+    await fs.mkdir(dirName, {recursive: true});
 
     await fs.writeFile(filePath, fileData, options);
     console.log('file has been created!');
@@ -40,6 +40,7 @@ const createFileAsync = async (filePath, fileData, options) => {
   }
 }
 
+// 判断文件是否存在
 const isFileExistAsync = async (_path) => {
   try {
     await fs.access(_path)
@@ -56,38 +57,24 @@ const isFileExistAsync = async (_path) => {
   }
 }
 
-const getConfigJsonAsync = async (event) => {
+// 获取应用的 documents 目录
+const getAppDocumentsDir = () => {
   const documentsDir = app.getPath('documents');
-  const configFilePath = path.join(documentsDir, 'cloudNote', 'config.json');
-  let configValue = '{}';
+  return path.join(documentsDir, 'cloudNote')
+}
+
+// 获取 config.json 文件内容
+const getConfigJsonAsync = async (event) => {
+  const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
+  let configValue;
+  // 判断 config.json 文件是否存在
   if (await isFileExistAsync(configFilePath)) {
     configValue = await readFileAsync(configFilePath) || '{}';
   } else {
+    // 如果 config.json 文件不存在，则创建默认的 config.json 文件
     const defaultConfigValue = JSON.stringify({
-      saveDirectory: path.join(documentsDir, 'cloudNote','save'),
-      groups: [
-        {
-          key: 'group-default',
-          label: '默认分组',
-          children: [
-            {
-              key: 'group-default-text',
-              label: '默认文本',
-            },
-          ],
-        },
-        {
-          key: 'group-2',
-          label: '分组2',
-          children: [
-            {
-              key: 'group-text-2',
-              label: '文本2',
-            },
-          ],
-        },
-      ],
-    });
+      saveDirectory: path.join(getAppDocumentsDir(), 'save'),
+    }, null, 2);
     await createFileAsync(configFilePath, defaultConfigValue)
     configValue = defaultConfigValue;
   }
@@ -106,5 +93,6 @@ module.exports = {
   readFileAsync,
   createFileAsync,
   isFileExistAsync,
+  getAppDocumentsDir,
   getConfigJsonAsync,
 };

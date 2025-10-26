@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectSaveDirectory: (defaultPath) => ipcRenderer.invoke('select-save-directory', defaultPath),
   getConfigJsonAsync: () => ipcRenderer.invoke('get-config-json-async'),
   updateConfigJsonAsync: () => ipcRenderer.invoke('update-config-json-async'),
+  getNoteGroupsAsync: (saveDir) => ipcRenderer.invoke('get-note-groups-async', saveDir),
 })

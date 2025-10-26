@@ -11,6 +11,7 @@ const {
   createFileAsync,
   isFileExistAsync,
   getConfigJsonAsync,
+  getAppDocumentsDir,
 } = require(path.join(__dirname, '../utils/tools.js'));
 
 // 最小化到托盘
@@ -59,9 +60,8 @@ ipcMain.handle('update-config-json-async', async (event, _config) => {
     ...config,
     ..._config,
   };
-  const documentsDir = app.getPath('documents');
-  const configFilePath = path.join(documentsDir, 'cloudNote', 'config.json');
-  createFileAsync(configFilePath, JSON.stringify(newConfig))
+  const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
+  createFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
 })
 
 // 监听渲染进程选择文件夹的请求
@@ -80,17 +80,44 @@ ipcMain.handle('select-save-directory', async (event, defaultPath) => {
     const configFilePath = path.join(saveDir, 'config.json');
     createFileAsync(configFilePath, JSON.stringify({
       saveDir: configFilePath,
-    }))
+    }, null, 2))
   }
 
   // 用户取消了选择
   return saveDir;
 });
 
-// 创建笔记
-ipcMain.handle('create-note-async', async (event, _paths, fileData, options) => {
-  // const documentsDir = app.getPath('documents');
-  // const saveDir = 'isDefaultPath?' ? documentsDir : 'D:\CloudNote'
-  // const newPaths = path.join(saveDir, ..._paths);
-  // createFileAsync(newPaths, fileData, options)
+// 获取笔记列表
+ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
+  const groupsConfigPath = path.join(saveDir, 'groups.json');
+  let groupsConfigValue;
+  if (await isFileExistAsync(groupsConfigPath)) {
+    groupsConfigValue = await readFileAsync(groupsConfigPath) || '{}';
+  } else {
+    const defaultGroupsValue = JSON.stringify({
+      groups: [
+        {
+          key: 'group-default',
+          label: '默认分组',
+          children: [
+            {
+              key: 'group-default-text',
+              label: '默认文本',
+              createTime: new Date().getTime(),
+              updateTime: new Date().getTime(),
+              tags: [],
+            },
+          ],
+        },
+      ],
+    }, null, 2);
+    await createFileAsync(groupsConfigPath, defaultGroupsValue);
+    groupsConfigValue = defaultGroupsValue;
+  }
+  try {
+    const groupsConfig = JSON.parse(groupsConfigValue);
+    return groupsConfig || {};
+  } catch (error) {
+    return {};
+  }
 })

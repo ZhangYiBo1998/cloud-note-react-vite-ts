@@ -1,15 +1,8 @@
-import {createContext, type Dispatch, type SetStateAction} from 'react';
+import {createContext} from 'react';
+import {ISettingsContextValue, IConfigContextValue, IGroupsContextValue} from "../types";
 
-export interface ISettings {
-    theme: string;
-    closeType: 'hide' | 'quit';
-}
-export interface ISettingsContext {
-    settings: ISettings,
-    setSettings: Dispatch<SetStateAction<ISettings>>;
-}
+export const SettingsContext = createContext<ISettingsContextValue>({} as ISettingsContextValue);
 
-export const SettingsContext = createContext<ISettingsContext>({} as ISettingsContext);
+export const ConfigContext = createContext<IConfigContextValue>({})
 
-
-export const ConfigContext = createContext({})
+export const GroupsContext = createContext<IGroupsContextValue>({})

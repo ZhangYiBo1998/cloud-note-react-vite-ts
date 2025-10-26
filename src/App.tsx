@@ -4,14 +4,22 @@ import '@ant-design/v5-patch-for-react-19';
 import SystemHeader from "./components/SystemHeader";
 import {
     SettingsContext,
-    type ISettings,
     ConfigContext,
+    GroupsContext,
 } from "./utils/context";
+import type {
+    ISettings,
+    IConfigContextValue,
+    IGroupsContextValue,
+} from "./types";
 import './App.css'
 
 const App: React.FC = () => {
-    const [config, setConfig] = useState({});
-    // 获取配置项
+    // APP配置项
+    const [config, setConfig] = useState<IConfigContextValue>({});
+    // 笔记列表
+    const [groups, setGroups] = useState<IGroupsContextValue>([]);
+    // 设置页配置
     const [settings, setSettings] = useState<ISettings>({
         theme: 'light',
         closeType: 'hide',
@@ -19,25 +27,35 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const init = async () => {
-            // 获取本地存储的配置项
-            setConfig(await window.electronAPI?.getConfigJsonAsync())
+            // 读取 config.json 的配置项
+            const _config = await window.electronAPI?.getConfigJsonAsync();
+            setConfig(_config)
+
+            // 获取保存目录后，读取笔记列表
+            const saveDir = _config.saveDirectory;
+            if (saveDir) {
+                // 读取笔记列表
+                const groupsConfig = await window.electronAPI?.getNoteGroupsAsync(saveDir);
+                setGroups(groupsConfig.groups || []);
+            }
         }
         init();
     }, []);
 
     return (
         <ConfigContext value={config}>
-            <SettingsContext
-                value={{
-                    settings,
-                    setSettings,
-                }}
-            >
-                <SystemHeader>
-                    <Outlet/>
-                </SystemHeader>
-            </SettingsContext>
-
+            <GroupsContext value={groups}>
+                <SettingsContext
+                    value={{
+                        settings,
+                        setSettings,
+                    }}
+                >
+                    <SystemHeader>
+                        <Outlet/>
+                    </SystemHeader>
+                </SettingsContext>
+            </GroupsContext>
         </ConfigContext>
     )
 }

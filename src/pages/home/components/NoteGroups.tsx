@@ -1,20 +1,32 @@
-import React, {memo, useContext, useState} from "react";
+import React, {memo, useContext, useState, useMemo} from "react";
 import {Menu} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
 import {
-    ConfigContext,
+    GroupsContext,
 } from "../../../utils/context";
-
-type MenuItem = Required<MenuProps>['items'][number];
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
-    const config = useContext(ConfigContext);
+    const groups = useContext(GroupsContext);
 
-    const items: MenuItem[] = config.groups || [];
-    const [selectedKeys, setSelectedKeys] = useState([]);
-    const [openKeys, setOpenKeys] = useState([]);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+    const [openKeys, setOpenKeys] = useState<string[]>([]);
+
+    const items = useMemo(() => {
+        return groups.map((group) => {
+            return {
+                key: group.key,
+                label: group.label,
+                children: group.children.map((child) => {
+                    return {
+                        key: child.key,
+                        label: child.label,
+                    }
+                })
+            }
+        })
+    }, [groups]);
 
     const onSelect: MenuProps['onSelect'] = (e) => {
         setSelectedKeys(e.selectedKeys)

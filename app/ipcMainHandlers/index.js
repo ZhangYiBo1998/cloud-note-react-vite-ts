@@ -94,24 +94,33 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
   if (await isFileExistAsync(groupsConfigPath)) {
     groupsConfigValue = await readFileAsync(groupsConfigPath) || '{}';
   } else {
+    const now = Date.now();
     const defaultGroupsValue = JSON.stringify({
       groups: [
         {
           key: 'group-default',
           label: '默认分组',
+          path: path.join(saveDir, 'default'),
+          createTime: now,
+          updateTime: now,
           children: [
             {
               key: 'group-default-text',
               label: '默认文本',
-              createTime: new Date().getTime(),
-              updateTime: new Date().getTime(),
+              createTime: now,
+              updateTime: now,
               tags: [],
+              type: 'text',
+              path: path.join(saveDir, 'default' , 'default.txt'),
             },
           ],
         },
       ],
     }, null, 2);
-    await createFileAsync(groupsConfigPath, defaultGroupsValue);
+    await Promise.all([
+      createFileAsync(groupsConfigPath, defaultGroupsValue),
+      createFileAsync(path.join(saveDir, 'default', 'default.txt'), ''),
+    ])
     groupsConfigValue = defaultGroupsValue;
   }
   try {

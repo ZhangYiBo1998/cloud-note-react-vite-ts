@@ -66,10 +66,8 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             [FILE_TYPE.Markdown]: '.md',
         }
         // 根据groupId找到对应的分组位置
-        const fileName: string = `新建笔记${noteTypeMap[typeRef.current]}`;
-        const newGroupsConfig = groups.map(async (item) => {
+        const newGroups = groups.map((item) => {
             if (item.key === groupId) {
-                const notePath = await window.electronAPI?.pathJoinSave(item.label, fileName);
                 const now = Date.now();
                 // 往对应的分组位置插入新的笔记
                 if (!item.children) {
@@ -77,19 +75,16 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 }
                 item.children.push({
                     key: `group-${crypto.randomUUID()}`,
-                    label: '新建笔记',
-                    path: notePath,
-                    tags: [],
-                    fileName,
+                    label: `新建笔记${noteTypeMap[typeRef.current]}`,
                     createTime: now,
                     updateTime: now,
-                    type: 'file',
+                    tags: [],
                 });
             }
             return item;
         })
         setGroupsConfig({
-            groups: newGroupsConfig,
+            groups: newGroups,
         } as IGroupsContextValue['groupsConfig'])
         // 重新生成groups.json文件
         onChange(typeRef.current);

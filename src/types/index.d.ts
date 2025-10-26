@@ -17,12 +17,9 @@ export interface IConfigContextValue {
 export interface IMenuItem {
     key: string;
     label: string;
-    path: string;
     createTime: number;
     updateTime: number;
-    type: 'file' | 'folder';
     tags?: string[];
-    fileName?: string
     children?: IMenuItem[];
 }
 

@@ -13,15 +13,15 @@ export interface IConfigContextValue {
     saveDirectory?: string;
 }
 
-interface IMenuItemChildrenItem {
-    createTime: number;
-    updateTime: number;
-}
-
 export interface IMenuItem {
     key: string;
     label: string;
-    children?: (IMenuItemChildrenItem & IMenuItem)[];
+    path: string;
+    createTime: number;
+    updateTime: number;
+    type: 'file' | 'folder';
+    fileName: string,
+    children?: IMenuItem[];
 }
 
 export type IGroupsContextValue = {

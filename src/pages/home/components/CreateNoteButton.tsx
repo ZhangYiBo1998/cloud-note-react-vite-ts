@@ -1,4 +1,4 @@
-import React, {useRef, useState, useContext} from 'react';
+import React, {useRef, useState, useContext, useMemo} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
 import IconMD from "../../../assets/icon-markdown.svg";
@@ -46,22 +46,24 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 setIsModalOpen(true);
             },
         },
-    ]
+    ];
 
-    const groupOptions = (groupsConfig.groups || []).map((item) => {
-        return {
-            ...item,
-            value: item.key,
-        }
-    })
+    const groupOptions = useMemo(() => {
+        return (groupsConfig.groups || []).map((item) => {
+            return {
+                ...item,
+                value: item.key,
+            }
+        })
+    }, [groupsConfig.groups])
 
-    const createNote = async (groupId: string) => {
-        console.log(groupId);
-        // 根据groupId找到对应的分组位置
-        // 往对应的分组位置插入新的笔记
-        // 刷新笔记列表
-        // 重新生成groups.json文件
-    }
+    // const createNote = async (groupId: string) => {
+    //     console.log(groupId);
+    //     // 根据groupId找到对应的分组位置
+    //     // 往对应的分组位置插入新的笔记
+    //     // 刷新笔记列表
+    //     // 重新生成groups.json文件
+    // }
 
     return (
         <>
@@ -94,9 +96,6 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                     form={form}
                     onFinish={async (values) => {
                         console.log(values);
-                        if (values.group) {
-                            await createNote(values.group);
-                        }
                         onChange(typeRef.current);
                         setIsModalOpen(false);
 

@@ -1,5 +1,4 @@
 import type {Dispatch, SetStateAction} from "react";
-import type {MenuProps} from "antd";
 
 export interface ISettings {
     theme: string;
@@ -23,7 +22,7 @@ export interface IMenuItem {
     key: string;
     label: string;
     children?: (IMenuItemChildrenItem & IMenuItem)[];
-};
+}
 
 export type IGroupsContextValue = {
     groups?: IMenuItem[];

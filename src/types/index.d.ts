@@ -4,6 +4,7 @@ export interface ISettings {
     theme: string;
     closeType: 'hide' | 'quit';
 }
+
 export interface ISettingsContextValue {
     settings: ISettings,
     setSettings: Dispatch<SetStateAction<ISettings>>;
@@ -20,8 +21,7 @@ export interface IMenuItem {
     createTime: number;
     updateTime: number;
     type: 'file' | 'folder';
-    fileName: string,
-    children?: IMenuItem[];
+    children?: (IMenuItem & { tags: string[]; fileName: string })[];
 }
 
 export type IGroupsContextValue = {

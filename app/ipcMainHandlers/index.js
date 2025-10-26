@@ -103,6 +103,7 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
           path: path.join(saveDir, '默认分组'),
           createTime: now,
           updateTime: now,
+          type: 'folder',
           children: [
             {
               key: 'group-default-text',
@@ -110,7 +111,8 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
               createTime: now,
               updateTime: now,
               tags: [],
-              type: 'text',
+              type: 'file',
+              fileName: '默认文本.txt',
               path: path.join(saveDir, '默认分组' , '默认文本.txt'),
             },
           ],

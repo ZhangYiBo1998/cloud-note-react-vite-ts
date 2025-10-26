@@ -55,6 +55,14 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
         }
     })
 
+    const createNote = async (groupId: string) => {
+        console.log(groupId);
+        // 根据groupId找到对应的分组位置
+        // 往对应的分组位置插入新的笔记
+        // 刷新笔记列表
+        // 重新生成groups.json文件
+    }
+
     return (
         <>
             <FloatButton.Group
@@ -84,8 +92,11 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             >
                 <Form
                     form={form}
-                    onFinish={(values) => {
+                    onFinish={async (values) => {
                         console.log(values);
+                        if (values.group) {
+                            await createNote(values.group);
+                        }
                         onChange(typeRef.current);
                         setIsModalOpen(false);
 

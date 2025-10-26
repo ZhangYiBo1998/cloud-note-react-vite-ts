@@ -100,7 +100,7 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
         {
           key: 'group-default',
           label: '默认分组',
-          path: path.join(saveDir, 'default'),
+          path: path.join(saveDir, '默认分组'),
           createTime: now,
           updateTime: now,
           children: [
@@ -111,7 +111,7 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
               updateTime: now,
               tags: [],
               type: 'text',
-              path: path.join(saveDir, 'default' , 'default.txt'),
+              path: path.join(saveDir, '默认分组' , '默认文本.txt'),
             },
           ],
         },
@@ -119,7 +119,7 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
     }, null, 2);
     await Promise.all([
       createFileAsync(groupsConfigPath, defaultGroupsValue),
-      createFileAsync(path.join(saveDir, 'default', 'default.txt'), ''),
+      createFileAsync(path.join(saveDir, '默认分组' , '默认文本.txt'), ''),
     ])
     groupsConfigValue = defaultGroupsValue;
   }

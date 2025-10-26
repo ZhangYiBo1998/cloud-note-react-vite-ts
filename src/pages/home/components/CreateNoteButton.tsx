@@ -5,6 +5,7 @@ import IconMD from "../../../assets/icon-markdown.svg";
 import {
     GroupsContext,
 } from "../../../utils/context";
+import type {IGroupsContextValue} from "../../../types";
 
 const Icon = (props: { src: string }) => {
     const {src} = props;
@@ -23,7 +24,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
     const {
         onChange,
     } = props;
-    const groupsConfig = useContext(GroupsContext);
+    const {groupsConfig, setGroupsConfig} = useContext(GroupsContext);
     const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const typeRef = useRef('');
@@ -57,13 +58,32 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
         })
     }, [groupsConfig.groups])
 
-    // const createNote = async (groupId: string) => {
-    //     console.log(groupId);
-    //     // 根据groupId找到对应的分组位置
-    //     // 往对应的分组位置插入新的笔记
-    //     // 刷新笔记列表
-    //     // 重新生成groups.json文件
-    // }
+    const createNote = async (groupId: string) => {
+        console.log(groupId);
+        // 根据groupId找到对应的分组位置
+        const newGroupsConfig = (groupsConfig.groups || []).map((item) => {
+            if (item.key === groupId) {
+                // 往对应的分组位置插入新的笔记
+                item.children = [...(item.children || []), {
+                    key: '',
+                    label: '新建笔记',
+                    path: '',
+                    tags: [],
+                    fileName: typeRef.current === 'txt' ? '新建笔记.txt' : '新建笔记.md',
+                    createTime: Date.now(),
+                    updateTime: Date.now(),
+                    type: 'file',
+                }];
+                return item;
+            }
+        })
+        setGroupsConfig({
+            groups: newGroupsConfig,
+        } as IGroupsContextValue['groupsConfig'])
+        // 重新生成groups.json文件
+        onChange(typeRef.current);
+        setIsModalOpen(false);
+    }
 
     return (
         <>
@@ -95,10 +115,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 <Form
                     form={form}
                     onFinish={async (values) => {
-                        console.log(values);
-                        onChange(typeRef.current);
-                        setIsModalOpen(false);
-
+                        createNote(values.group);
                     }}
                     initialValues={{
                         group: 'default',

@@ -18,7 +18,7 @@ const App: React.FC = () => {
     // APP配置项
     const [config, setConfig] = useState<IConfigContextValue>({});
     // 笔记列表
-    const [groupsConfig, setGroupsConfig] = useState<IGroupsContextValue>({});
+    const [groupsConfig, setGroupsConfig] = useState<IGroupsContextValue['groupsConfig']>({});
     // 设置页配置
     const [settings, setSettings] = useState<ISettings>({
         theme: 'light',
@@ -44,7 +44,10 @@ const App: React.FC = () => {
 
     return (
         <ConfigContext value={config}>
-            <GroupsContext value={groupsConfig}>
+            <GroupsContext value={{
+                groupsConfig,
+                setGroupsConfig,
+            }}>
                 <SettingsContext
                     value={{
                         settings,

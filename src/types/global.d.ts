@@ -13,7 +13,7 @@ export interface IElectronAPI {
     getConfigJsonAsync(): Promise<IConfigContextValue>;
     updateConfigJsonAsync(config: IConfigContextValue): Promise<void>;
     // 获取笔记列表
-    getNoteGroupsAsync(saveDir: string): Promise<IGroupsContextValue>;
+    getNoteGroupsAsync(saveDir: string): Promise<IGroupsContextValue['groupsConfig']>;
 }
 
 declare global {

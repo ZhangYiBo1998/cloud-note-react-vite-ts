@@ -24,6 +24,11 @@ export interface IMenuItem {
     children?: (IMenuItem & { tags: string[]; fileName: string })[];
 }
 
-export type IGroupsContextValue = {
+export interface IGroupsConfig {
     groups?: IMenuItem[];
-};
+}
+
+export interface IGroupsContextValue {
+    groupsConfig: IGroupsConfig,
+    setGroupsConfig: Dispatch<SetStateAction<IGroupsConfig>>;
+}

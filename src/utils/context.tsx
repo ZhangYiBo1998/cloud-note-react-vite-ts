@@ -5,4 +5,4 @@ export const SettingsContext = createContext<ISettingsContextValue>({} as ISetti
 
 export const ConfigContext = createContext<IConfigContextValue>({})
 
-export const GroupsContext = createContext<IGroupsContextValue>({})
+export const GroupsContext = createContext<IGroupsContextValue>({} as IGroupsContextValue)

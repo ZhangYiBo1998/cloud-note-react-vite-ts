@@ -8,7 +8,7 @@ import {
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
-    const groupsConfig = useContext(GroupsContext);
+    const {groupsConfig} = useContext(GroupsContext);
 
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);

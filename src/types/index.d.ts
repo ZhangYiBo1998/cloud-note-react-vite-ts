@@ -14,8 +14,17 @@ export interface IConfigContextValue {
     saveDirectory?: string;
 }
 
-type MenuItem = Required<MenuProps>['items'][number];
+interface IMenuItemChildrenItem {
+    createTime: number;
+    updateTime: number;
+}
+
+export interface IMenuItem {
+    key: string;
+    label: string;
+    children?: (IMenuItemChildrenItem & IMenuItem)[];
+};
 
 export type IGroupsContextValue = {
-    groups: MenuItem[];
+    groups?: IMenuItem[];
 };

@@ -1,9 +1,9 @@
 import React, {useRef, useState, useContext} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
-import IconMD from "../../../assets/icon-markdown.svg";;
+import IconMD from "../../../assets/icon-markdown.svg";
 import {
-    ConfigContext,
+    GroupsContext,
 } from "../../../utils/context";
 
 const Icon = (props: { src: string }) => {
@@ -23,7 +23,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
     const {
         onChange,
     } = props;
-    const config = useContext(ConfigContext);
+    const groupsConfig = useContext(GroupsContext);
     const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const typeRef = useRef('');
@@ -48,7 +48,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
         },
     ]
 
-    const groupOptions = (config.groups || []).map((item) => {
+    const groupOptions = (groupsConfig.groups || []).map((item) => {
         return {
             ...item,
             value: item.key,

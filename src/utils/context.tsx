@@ -1,5 +1,5 @@
 import {createContext} from 'react';
-import {ISettingsContextValue, IConfigContextValue, IGroupsContextValue} from "../types";
+import type {ISettingsContextValue, IConfigContextValue, IGroupsContextValue} from "../types";
 
 export const SettingsContext = createContext<ISettingsContextValue>({} as ISettingsContextValue);
 

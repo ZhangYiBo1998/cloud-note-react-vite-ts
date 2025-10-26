@@ -8,17 +8,17 @@ import {
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
-    const groups = useContext(GroupsContext);
+    const groupsConfig = useContext(GroupsContext);
 
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);
 
     const items = useMemo(() => {
-        return groups.map((group) => {
+        return (groupsConfig.groups || []).map((group) => {
             return {
                 key: group.key,
                 label: group.label,
-                children: group.children.map((child) => {
+                children: (group.children || []).map((child) => {
                     return {
                         key: child.key,
                         label: child.label,
@@ -26,7 +26,7 @@ const NoteGroups: React.FC = () => {
                 })
             }
         })
-    }, [groups]);
+    }, [groupsConfig.groups]);
 
     const onSelect: MenuProps['onSelect'] = (e) => {
         setSelectedKeys(e.selectedKeys)

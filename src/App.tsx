@@ -18,7 +18,7 @@ const App: React.FC = () => {
     // APP配置项
     const [config, setConfig] = useState<IConfigContextValue>({});
     // 笔记列表
-    const [groups, setGroups] = useState<IGroupsContextValue>([]);
+    const [groupsConfig, setGroupsConfig] = useState<IGroupsContextValue>({});
     // 设置页配置
     const [settings, setSettings] = useState<ISettings>({
         theme: 'light',
@@ -35,8 +35,8 @@ const App: React.FC = () => {
             const saveDir = _config.saveDirectory;
             if (saveDir) {
                 // 读取笔记列表
-                const groupsConfig = await window.electronAPI?.getNoteGroupsAsync(saveDir);
-                setGroups(groupsConfig.groups || []);
+                const _groupsConfig = await window.electronAPI?.getNoteGroupsAsync(saveDir);
+                setGroupsConfig(_groupsConfig)
             }
         }
         init();
@@ -44,7 +44,7 @@ const App: React.FC = () => {
 
     return (
         <ConfigContext value={config}>
-            <GroupsContext value={groups}>
+            <GroupsContext value={groupsConfig}>
                 <SettingsContext
                     value={{
                         settings,

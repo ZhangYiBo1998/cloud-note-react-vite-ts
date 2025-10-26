@@ -64,7 +64,7 @@ const getAppDocumentsDir = () => {
 }
 
 // 获取 config.json 文件内容
-const getConfigJsonAsync = async (event) => {
+const getConfigJsonAsync = async () => {
   const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
   let configValue;
   // 判断 config.json 文件是否存在

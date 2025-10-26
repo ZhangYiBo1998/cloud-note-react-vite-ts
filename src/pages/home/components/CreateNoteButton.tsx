@@ -1,20 +1,12 @@
-import React, {useRef, useState, useContext, useMemo} from 'react';
+import React, {useRef, useState, useMemo} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
+import Icon from "../../components/Icon";
 import IconMD from "../../../assets/icon-markdown.svg";
-import {
-    GroupsContext,
-} from "../../../utils/context";
 import type {IGroupsContextValue} from "../../../types";
+import {FILE_TYPE} from "../../../utils/Enums";
+import useNoteInfo from "../../hooks/useNoteInfo";
 
-const Icon = (props: { src: string }) => {
-    const {src} = props;
-    return (
-        <div>
-            <img style={{width: 18, height: 18}} src={src} alt=""/>
-        </div>
-    )
-}
 
 interface IFieldValues {
     group: string;
@@ -24,58 +16,77 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
     const {
         onChange,
     } = props;
-    const {groupsConfig, setGroupsConfig} = useContext(GroupsContext);
+
+    const {
+        groups,
+        setGroupsConfig,
+    } = useNoteInfo()
     const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const typeRef = useRef('');
 
-    const floatButtonList = [
-        {
-            id: 'Md',
-            label: 'Markdown文件',
-            icon: <Icon src={IconMD}/>,
-            onClick: () => {
-                typeRef.current = 'Md';
-                setIsModalOpen(true);
+    // 悬浮按钮列表
+    const floatButtonList = useMemo(() => {
+        return [
+            {
+                id: FILE_TYPE.Markdown,
+                label: 'Markdown文件',
+                icon: <Icon src={IconMD}/>,
+                onClick: () => {
+                    typeRef.current = FILE_TYPE.Markdown;
+                    setIsModalOpen(true);
+                },
             },
-        },
-        {
-            id: 'txt',
-            label: '普通文本',
-            onClick: () => {
-                typeRef.current = 'txt';
-                setIsModalOpen(true);
+            {
+                id: FILE_TYPE.text,
+                label: '普通文本',
+                onClick: () => {
+                    typeRef.current = FILE_TYPE.text;
+                    setIsModalOpen(true);
+                },
             },
-        },
-    ];
+        ]
+    }, []);
 
+    // 下拉选项菜单
     const groupOptions = useMemo(() => {
-        return (groupsConfig.groups || []).map((item) => {
+        return groups.map((item) => {
             return {
                 ...item,
                 value: item.key,
             }
         })
-    }, [groupsConfig.groups])
+    }, [groups])
 
+    // 创建笔记
     const createNote = async (groupId: string) => {
         console.log(groupId);
+        const noteTypeMap = {
+            [FILE_TYPE.text]: '.txt',
+            [FILE_TYPE.Markdown]: '.md',
+        }
         // 根据groupId找到对应的分组位置
-        const newGroupsConfig = (groupsConfig.groups || []).map((item) => {
+        const fileName: string = `新建笔记${noteTypeMap[typeRef.current]}`;
+        const newGroupsConfig = groups.map(async (item) => {
             if (item.key === groupId) {
+                const notePath = await window.electronAPI?.pathJoinSave(item.label, fileName);
+                const now = Date.now();
                 // 往对应的分组位置插入新的笔记
-                item.children = [...(item.children || []), {
-                    key: '',
+                if (!item.children) {
+                    item.children = [];
+                }
+                item.children.push({
+                    key: `group-${crypto.randomUUID()}`,
                     label: '新建笔记',
-                    path: '',
+                    path: notePath,
                     tags: [],
-                    fileName: typeRef.current === 'txt' ? '新建笔记.txt' : '新建笔记.md',
-                    createTime: Date.now(),
-                    updateTime: Date.now(),
+                    fileName,
+                    createTime: now,
+                    updateTime: now,
                     type: 'file',
-                }];
-                return item;
+                });
             }
+            return item;
         })
         setGroupsConfig({
             groups: newGroupsConfig,

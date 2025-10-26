@@ -21,7 +21,9 @@ export interface IMenuItem {
     createTime: number;
     updateTime: number;
     type: 'file' | 'folder';
-    children?: (IMenuItem & { tags: string[]; fileName: string })[];
+    tags?: string[];
+    fileName?: string
+    children?: IMenuItem[];
 }
 
 export interface IGroupsConfig {

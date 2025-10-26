@@ -5,13 +5,14 @@ import {
 } from '@ant-design/icons';
 import {
     SettingsContext,
-    ConfigContext,
 } from "../../utils/context";
+import useNoteInfo from "../hooks/useNoteInfo";
 
 const Setting: React.FC = () => {
     const {settings, setSettings} = useContext(SettingsContext);
-    const config = useContext(ConfigContext);
-    console.log('config', config);
+    const {
+        saveDirectory,
+    } = useNoteInfo();
     // 开机自启
     const [autoLaunchValue, setAutoLaunchValue] = useState(false);
 
@@ -27,7 +28,8 @@ const Setting: React.FC = () => {
     }
 
     const selectSaveDirectory = async () => {
-        const dir = await window.electronAPI?.selectSaveDirectory(config.saveDirectory);
+        const dir = await window.electronAPI?.selectSaveDirectory(saveDirectory);
+        console.log('select-saveDirectory', dir);
         if (dir) {
             window.electronAPI?.updateConfigJsonAsync({
                 saveDirectory: dir
@@ -46,7 +48,7 @@ const Setting: React.FC = () => {
                             onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
                 </Form.Item>
                 <Form.Item label="指定存档文件夹">
-                    <Input value={config.saveDirectory} addonAfter={<EllipsisOutlined onClick={selectSaveDirectory}/>}/>
+                    <Input value={saveDirectory} addonAfter={<EllipsisOutlined onClick={selectSaveDirectory}/>}/>
                 </Form.Item>
             </Form>
         </Card>

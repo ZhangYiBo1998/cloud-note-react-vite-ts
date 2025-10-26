@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAutoLaunch: () => ipcRenderer.invoke('get-auto-launch'),
   selectSaveDirectory: (defaultPath) => ipcRenderer.invoke('select-save-directory', defaultPath),
   getConfigJsonAsync: () => ipcRenderer.invoke('get-config-json-async'),
-  updateConfigJsonAsync: () => ipcRenderer.invoke('update-config-json-async'),
+  updateConfigJsonAsync: (newConfigJson) => ipcRenderer.invoke('update-config-json-async', newConfigJson),
   getNoteGroupsAsync: (saveDir) => ipcRenderer.invoke('get-note-groups-async', saveDir),
+  pathJoin: (...paths) => ipcRenderer.invoke('path-join', ...paths),
+  pathJoinSave: (...paths) => ipcRenderer.invoke('path-join-save', ...paths),
 })

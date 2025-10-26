@@ -26,7 +26,7 @@ const readFileAsync = async (filePath, options) => {
   }
 }
 
-const createFileAsync = async (filePath, fileData, options) => {
+const writeFileAsync = async (filePath, fileData, options) => {
   try {
     // 提取文件所在目录
     const dirName = path.dirname(filePath);
@@ -66,7 +66,7 @@ const getAppDocumentsDir = () => {
 // 获取 config.json 文件内容
 const getConfigJsonAsync = async () => {
   const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
-  let configValue;
+  let configValue, config;
   // 判断 config.json 文件是否存在
   if (await isFileExistAsync(configFilePath)) {
     configValue = await readFileAsync(configFilePath) || '{}';
@@ -75,15 +75,22 @@ const getConfigJsonAsync = async () => {
     const defaultConfigValue = JSON.stringify({
       saveDirectory: path.join(getAppDocumentsDir(), 'save'),
     }, null, 2);
-    await createFileAsync(configFilePath, defaultConfigValue)
+    await writeFileAsync(configFilePath, defaultConfigValue)
     configValue = defaultConfigValue;
   }
   try {
-    return JSON.parse(configValue);
+    config = JSON.parse(configValue) || {};
+    return config;
   } catch (error) {
     console.error('JSON.parse(configValue) error', error);
     return {};
   }
+}
+
+// 获取应用的保存目录
+const getAppSaveDirectory = async () => {
+  const config = await getAppDocumentsDir();
+  return config.saveDirectory;
 }
 
 
@@ -91,8 +98,9 @@ module.exports = {
   showMainWindow,
   hideMainWindow,
   readFileAsync,
-  createFileAsync,
+  writeFileAsync,
   isFileExistAsync,
   getAppDocumentsDir,
   getConfigJsonAsync,
+  getAppSaveDirectory,
 };

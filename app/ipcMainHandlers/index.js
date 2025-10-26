@@ -8,10 +8,11 @@ const path = require('path');
 const {
   hideMainWindow,
   readFileAsync,
-  createFileAsync,
+  writeFileAsync,
   isFileExistAsync,
   getConfigJsonAsync,
   getAppDocumentsDir,
+  getAppSaveDirectory,
 } = require(path.join(__dirname, '../utils/tools.js'));
 
 // 最小化到托盘
@@ -41,6 +42,7 @@ ipcMain.handle('set-auto-launch', async (event, enabled) => {
     args: enabled ? ['--hidden'] : []
   })
 })
+
 // 获取当前应用的开机自启状态
 ipcMain.handle('get-auto-launch', async () => {
   const settings = app.getLoginItemSettings({
@@ -58,10 +60,21 @@ ipcMain.handle('update-config-json-async', async (event, _config) => {
   const config = getConfigJsonAsync(event);
   const newConfig = {
     ...config,
-    ..._config,
+    ...(_config || {}),
   };
   const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
-  createFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
+  writeFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
+})
+
+// 获取文件路径
+ipcMain.handle('path-join', async (event, ...paths) => {
+  return path.join(...paths)
+})
+
+// 获取存档文件夹路径
+ipcMain.handle('path-join-save', async (event, ...paths) => {
+  const saveDir = await getAppSaveDirectory();
+  return path.join(saveDir, ...paths)
 })
 
 // 监听渲染进程选择文件夹的请求
@@ -76,59 +89,55 @@ ipcMain.handle('select-save-directory', async (event, defaultPath) => {
   let saveDir = null;
   if (!result.canceled && result.filePaths.length > 0) {
     // 返回用户选择的文件夹路径
-    saveDir = result.filePaths[0];
-    const configFilePath = path.join(saveDir, 'config.json');
-    createFileAsync(configFilePath, JSON.stringify({
-      saveDir: configFilePath,
-    }, null, 2))
+    saveDir = path.join(result.filePaths[0], 'save');
+  }
+  if (!saveDir) {
+    // 用户取消了选择
+    throw new Error('未选择save文件夹');
   }
 
-  // 用户取消了选择
   return saveDir;
 });
 
 // 获取笔记列表
 ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
-  const groupsConfigPath = path.join(saveDir, 'groups.json');
-  let groupsConfigValue;
-  if (await isFileExistAsync(groupsConfigPath)) {
-    groupsConfigValue = await readFileAsync(groupsConfigPath) || '{}';
-  } else {
-    const now = Date.now();
-    const defaultGroupsValue = JSON.stringify({
-      groups: [
-        {
-          key: 'group-default',
-          label: '默认分组',
-          path: path.join(saveDir, '默认分组'),
-          createTime: now,
-          updateTime: now,
-          type: 'folder',
-          children: [
-            {
-              key: 'group-default-text',
-              label: '默认文本',
-              createTime: now,
-              updateTime: now,
-              tags: [],
-              type: 'file',
-              fileName: '默认文本.txt',
-              path: path.join(saveDir, '默认分组' , '默认文本.txt'),
-            },
-          ],
-        },
-      ],
-    }, null, 2);
-    await Promise.all([
-      createFileAsync(groupsConfigPath, defaultGroupsValue),
-      createFileAsync(path.join(saveDir, '默认分组' , '默认文本.txt'), ''),
-    ])
-    groupsConfigValue = defaultGroupsValue;
-  }
   try {
-    const groupsConfig = JSON.parse(groupsConfigValue);
-    return groupsConfig || {};
+    const groupsConfigPath = path.join(saveDir, 'groups.json');
+    if (await isFileExistAsync(groupsConfigPath)) {
+      const groupsConfigValue = await readFileAsync(groupsConfigPath);
+      const groupsConfig = JSON.parse(groupsConfigValue || null);
+      return groupsConfig || {
+        groups: [],
+      };
+    }
+    return {
+      groups: [],
+    };
   } catch (error) {
-    return {};
+    return {
+      groups: [],
+    };
   }
 })
+
+
+// const now = Date.now();
+// const defaultGroupsValue = JSON.stringify({
+//   groups: [
+//     {
+//       key: 'group-default',
+//       label: '默认分组',
+//       createTime: now,
+//       updateTime: now,
+//       children: [
+//         {
+//           key: 'group-default-text',
+//           label: '默认文本',
+//           createTime: now,
+//           updateTime: now,
+//           tags: [],
+//         },
+//       ],
+//     },
+//   ],
+// }, null, 2);

@@ -5,7 +5,17 @@ type SearchProps = GetProps<typeof Input.Search>;
 
 const {Search} = Input;
 
-const options = [
+interface IGroupsOptionsItem {
+    value: string;
+    label: string;
+    placeholder: string;
+}
+
+interface IGroupsOptionsMap {
+    [key: string]: IGroupsOptionsItem;
+}
+
+const options: IGroupsOptionsItem[] = [
     {
         value: 'fileName',
         label: '文件名',
@@ -18,10 +28,10 @@ const options = [
     },
 ];
 
-const searchTypeMap = options.reduce((obj, item) => {
+const searchTypeMap = options.reduce((obj: IGroupsOptionsMap, item) => {
     obj[item.value] = item;
     return obj
-}, {});
+}, {} as IGroupsOptionsMap);
 
 const NoteSearch: React.FC = () => {
     // 搜索类型

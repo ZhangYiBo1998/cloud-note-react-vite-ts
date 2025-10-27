@@ -53,15 +53,18 @@ ipcMain.handle('get-auto-launch', async () => {
 })
 
 // 读取配置文件
-ipcMain.handle('get-config-json-async', getConfigJsonAsync)
+ipcMain.handle('get-config-json-async', async (event, force) => {
+  return await getConfigJsonAsync(force)
+})
 
 // 更新配置文件
 ipcMain.handle('update-config-json-async', async (event, _config) => {
-  const config = getConfigJsonAsync(event);
+  const config = global.config || {};
   const newConfig = {
     ...config,
     ...(_config || {}),
   };
+  global.config = newConfig;
   const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
   writeFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
 })

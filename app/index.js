@@ -14,6 +14,7 @@ const {
 const {
   showMainWindow,
   hideMainWindow,
+  getConfigJsonAsync,
 } = require(path.join(__dirname, './utils/tools.js'));
 require(path.join(__dirname, './ipcMainHandlers/index.js'));
 
@@ -105,7 +106,8 @@ const createSystemMenu = (win) => {
 }
 
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  global.config = await getConfigJsonAsync();
   createWindow();
   // macOS 特有行为：处理点击 Dock 图标时的响应
   app.on('activate', function () {

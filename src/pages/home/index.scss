@@ -28,16 +28,16 @@
   }
 
   .container {
-    height: calc(100vh - 86px);
+    height: calc(100vh - 90px);
 
     .sidebar {
       width: 160px;
-      height: calc(100vh - 86px);
+      height: calc(100vh - 90px);
     }
 
     .content {
       width: calc(100% - 160px);
-      height: calc(100vh - 86px);
+      height: calc(100vh - 90px);
     }
   }
 

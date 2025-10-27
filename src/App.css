@@ -50,3 +50,12 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #8e9397;
 }
+
+.system-icon-close:hover {
+    background-color: #f42828;
+    color: #fff;
+}
+.system-icon-Minus:hover {
+    background-color: #9f9b9b;
+    color: #fff;
+}

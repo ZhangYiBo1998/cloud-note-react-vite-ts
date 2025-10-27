@@ -24,7 +24,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
         <Flex vertical>
             <Flex
                 className="drag-area" justify="space-between"
-                style={{height: '16px', padding: '10px 15px', backgroundColor: '#7ed0f6'}}
+                style={{height: '40px', backgroundColor: '#7ed0f6', paddingLeft: '15px'}}
             >
                 <Flex>
                     {
@@ -47,13 +47,21 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                         )
                     }
                 </Flex>
-                <Flex gap={30}>
-                    <MinusOutlined
-                        className="no-drag-area"
+                <Flex>
+                    <Flex
+                        className="no-drag-area system-icon-Minus"
+                        style={{ width: '40px', height: '40px' }}
+                        justify="center"
+                        align="center"
                         onClick={() => window.electronAPI?.hideWindow()}
-                    />
-                    <CloseOutlined
-                        className="no-drag-area"
+                    >
+                        <MinusOutlined />
+                    </Flex>
+                    <Flex
+                        className="no-drag-area system-icon-close"
+                        style={{ width: '40px', height: '40px' }}
+                        justify="center"
+                        align="center"
                         onClick={() => {
                             if (settings.closeType === 'hide') {
                                 window.electronAPI?.hideWindow();
@@ -65,7 +73,9 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                                 return;
                             }
                         }}
-                    />
+                    >
+                        <CloseOutlined />
+                    </Flex>
                 </Flex>
             </Flex>
             {children}

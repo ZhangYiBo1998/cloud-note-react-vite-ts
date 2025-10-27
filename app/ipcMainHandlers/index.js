@@ -153,10 +153,15 @@ ipcMain.handle('create-note-async', async (event, options) => {
     const {
       paths = [],
       content = "",
+      type,
     } = options || {};
     const saveDir = await getAppSaveDirectoryAsync();
     const notePath = path.join(saveDir, ...paths);
-    await writeFileAsync(notePath, content);
+    if (type === 'group') {
+      await fs.mkdir(notePath, {recursive: true});
+    } else {
+      await writeFileAsync(notePath, content);
+    }
   } catch (error) {
     throw new Error(error);
   }

@@ -153,12 +153,13 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                         createNote(values);
                     }}
                     initialValues={{
-                        groupId: 'default',
+                        groupId: groupOptions[0]?.value || '',
                     }}
                 >
                     <Form.Item<IFieldValues>
                         label="分组"
                         name="groupId"
+                        rules={[{required: true, message: '分组是必填项！'}]}
                     >
                         <Select options={groupOptions}/>
                     </Form.Item>

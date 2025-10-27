@@ -40,5 +40,6 @@ export interface IGroupsContextValue {
 
 export interface ICreateNoteOptions {
     paths: string[];
-    content: string;
+    content?: string;
+    type?: 'file' | 'group'
 }

@@ -1,32 +1,32 @@
-import React, {memo, useContext, useState, useMemo} from "react";
+import React, {memo, useState, useMemo} from "react";
 import {Menu} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
-import {
-    GroupsContext,
-} from "../../../utils/context";
+import useNoteInfo from "../../hooks/useNoteInfo";
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
-    const {groupsConfig} = useContext(GroupsContext);
+    const {
+        groups,
+    } = useNoteInfo()
 
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);
 
     const items = useMemo(() => {
-        return (groupsConfig.groups || []).map((group) => {
+        return groups.map((group) => {
             return {
                 key: group.key,
-                label: group.label,
+                label: group.name,
                 children: (group.children || []).map((child) => {
                     return {
                         key: child.key,
-                        label: child.label,
+                        label: child.name,
                     }
                 })
             }
         })
-    }, [groupsConfig.groups]);
+    }, [groups]);
 
     const onSelect: MenuProps['onSelect'] = (e) => {
         setSelectedKeys(e.selectedKeys)

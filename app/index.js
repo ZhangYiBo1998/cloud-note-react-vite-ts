@@ -15,6 +15,7 @@ const {
   showMainWindow,
   hideMainWindow,
   getConfigJsonAsync,
+  getGroupsConfigAsync,
 } = require(path.join(__dirname, './utils/tools.js'));
 require(path.join(__dirname, './ipcMainHandlers/index.js'));
 
@@ -105,9 +106,16 @@ const createSystemMenu = (win) => {
   })
 }
 
+// 初始化应用配置
+const initAsync = async () => {
+  // 设置全局变量
+  global.app_config = await getConfigJsonAsync();
+  global.app_groupsConfig = await getGroupsConfigAsync();
+}
 
 app.whenReady().then(async () => {
-  global.config = await getConfigJsonAsync();
+  // 初始化应用配置
+  await initAsync();
   createWindow();
   // macOS 特有行为：处理点击 Dock 图标时的响应
   app.on('activate', function () {

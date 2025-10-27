@@ -10,6 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getConfigJsonAsync: (force) => ipcRenderer.invoke('get-config-json-async', force),
   updateConfigJsonAsync: (newConfigJson) => ipcRenderer.invoke('update-config-json-async', newConfigJson),
   getNoteGroupsAsync: (saveDir) => ipcRenderer.invoke('get-note-groups-async', saveDir),
-  pathJoin: (...paths) => ipcRenderer.invoke('path-join', ...paths),
-  pathJoinSave: (...paths) => ipcRenderer.invoke('path-join-save', ...paths),
+  updateGroupsConfigAsync: (newGroupsConfig) => ipcRenderer.invoke('update-groups-config-async', newGroupsConfig),
+  createNoteAsync: (options) => ipcRenderer.invoke('create-note-async', options),
 })

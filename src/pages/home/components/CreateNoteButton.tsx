@@ -3,7 +3,7 @@ import {PlusOutlined} from '@ant-design/icons';
 import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
 import Icon from "../../components/Icon";
 import IconMD from "../../../assets/icon-markdown.svg";
-import type {IGroupsContextValue} from "../../../types";
+import type {IGroupsContextValue, IMenuItem} from "../../../types";
 import {FILE_TYPE} from "../../../utils/Enums";
 import useNoteInfo from "../../hooks/useNoteInfo";
 
@@ -53,6 +53,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
         return groups.map((item) => {
             return {
                 ...item,
+                label: item.name,
                 value: item.key,
             }
         })
@@ -66,6 +67,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             [FILE_TYPE.Markdown]: '.md',
         }
         // 根据groupId找到对应的分组位置
+        const targetGroup: IMenuItem = groups.find((item) => item.key === groupId) || {} as IMenuItem;
         const newGroups = groups.map((item) => {
             if (item.key === groupId) {
                 const now = Date.now();
@@ -75,7 +77,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 }
                 item.children.push({
                     key: `group-${crypto.randomUUID()}`,
-                    fileName: `新建笔记${noteTypeMap[typeRef.current]}`,
+                    name: `新建笔记${noteTypeMap[typeRef.current]}`,
                     createTime: now,
                     updateTime: now,
                     tags: [],
@@ -83,10 +85,19 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             }
             return item;
         })
-        setGroupsConfig({
+        const _groupsConfig = {
             groups: newGroups,
-        } as IGroupsContextValue['groupsConfig'])
-        // 重新生成groups.json文件
+        }
+        setGroupsConfig(_groupsConfig as IGroupsContextValue['groupsConfig']);
+        await Promise.all([
+            // 重新生成groups.json文件
+            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
+            // 创建笔记文件
+            window.electronAPI.createNoteAsync({
+                paths: [targetGroup.name, `新建笔记${noteTypeMap[typeRef.current]}`],
+                content: '',
+            })
+        ])
         onChange(typeRef.current);
         setIsModalOpen(false);
     }

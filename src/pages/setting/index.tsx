@@ -29,7 +29,6 @@ const Setting: React.FC = () => {
 
     const selectSaveDirectory = async () => {
         const dir = await window.electronAPI?.selectSaveDirectory(saveDirectory);
-        console.log('select-saveDirectory', dir);
         if (dir) {
             window.electronAPI?.updateConfigJsonAsync({
                 saveDirectory: dir

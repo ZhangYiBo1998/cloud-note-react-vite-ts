@@ -16,7 +16,7 @@ export interface IConfigContextValue {
 
 export interface IMenuItem {
     key: string;
-    fileName: string;
+    name: string;
     createTime: number;
     updateTime: number;
     tags?: string[];
@@ -30,4 +30,9 @@ export interface IGroupsConfig {
 export interface IGroupsContextValue {
     groupsConfig: IGroupsConfig,
     setGroupsConfig: Dispatch<SetStateAction<IGroupsConfig>>;
+}
+
+export interface ICreateNoteOptions {
+    paths: string[];
+    content: string;
 }

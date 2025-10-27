@@ -4,6 +4,7 @@ const {
   ipcMain,
   dialog,
 } = require('electron');
+const fs = require('fs').promises;
 const path = require('path');
 const {
   hideMainWindow,
@@ -12,8 +13,9 @@ const {
   isFileExistAsync,
   getConfigJsonAsync,
   getAppDocumentsDir,
-  getAppSaveDirectory,
+  getAppSaveDirectoryAsync,
 } = require(path.join(__dirname, '../utils/tools.js'));
+const {getGroupsConfigAsync} = require("../utils/tools");
 
 // 最小化到托盘
 ipcMain.on('window-hide', (event) => {
@@ -45,61 +47,68 @@ ipcMain.handle('set-auto-launch', async (event, enabled) => {
 
 // 获取当前应用的开机自启状态
 ipcMain.handle('get-auto-launch', async () => {
-  const settings = app.getLoginItemSettings({
-    // 这与设置时的 args 保持一致
-    args: ['--hidden']
-  })
-  return settings.openAtLogin
+  try {
+    const settings = app.getLoginItemSettings({
+      // 这与设置时的 args 保持一致
+      args: ['--hidden']
+    })
+    return settings.openAtLogin
+  } catch (error) {
+    return false;
+  }
 })
 
 // 读取配置文件
 ipcMain.handle('get-config-json-async', async (event, force) => {
-  return await getConfigJsonAsync(force)
+  try {
+    return await getConfigJsonAsync(force);
+  } catch (error) {
+    return {};
+  }
 })
 
 // 更新配置文件
 ipcMain.handle('update-config-json-async', async (event, _config) => {
-  const config = global.config || {};
-  const newConfig = {
-    ...config,
-    ...(_config || {}),
-  };
-  global.config = newConfig;
-  const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
-  writeFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
-})
-
-// 获取文件路径
-ipcMain.handle('path-join', async (event, ...paths) => {
-  return path.join(...paths)
-})
-
-// 获取存档文件夹路径
-ipcMain.handle('path-join-save', async (event, ...paths) => {
-  const saveDir = await getAppSaveDirectory();
-  return path.join(saveDir, ...paths)
+  try {
+    const config = await getConfigJsonAsync();
+    const newConfig = {
+      ...config,
+      ...(_config || {}),
+    };
+    global.app_config = newConfig;
+    const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
+    writeFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
+  } catch (error) {
+    throw new Error(error);
+  }
 })
 
 // 监听渲染进程选择文件夹的请求
 ipcMain.handle('select-save-directory', async (event, defaultPath) => {
-  const result = await dialog.showOpenDialog({
-    title: '选择存档文件夹',
-    defaultPath,
-    // 指定为选择文件夹
-    properties: ['openDirectory']
-  });
+  try {
+    const result = await dialog.showOpenDialog({
+      title: '选择存档文件夹',
+      defaultPath,
+      // 指定为选择文件夹
+      properties: ['openDirectory']
+    });
 
-  let saveDir = null;
-  if (!result.canceled && result.filePaths.length > 0) {
-    // 返回用户选择的文件夹路径
-    saveDir = path.join(result.filePaths[0], 'save');
-  }
-  if (!saveDir) {
-    // 用户取消了选择
-    throw new Error('未选择save文件夹');
-  }
+    let saveDir = null;
+    if (!result.canceled && result.filePaths.length > 0) {
+      // 返回用户选择的文件夹路径
+      saveDir = path.join(result.filePaths[0], 'save');
+      // 确保目录存在，如果不存在则递归创建
+      await fs.mkdir(saveDir, {recursive: true});
+    }
+    if (!saveDir) {
+      // 用户取消了选择
+      throw new Error('未选择save文件夹');
+    }
 
-  return saveDir;
+    return saveDir;
+  } catch (error) {
+    throw new Error(error);
+  }
 });
 
 // 获取笔记列表
@@ -123,24 +132,33 @@ ipcMain.handle('get-note-groups-async', async (event, saveDir) => {
   }
 })
 
+// 更新groups配置文件
+ipcMain.handle('update-groups-config-async', async (event, _newGroupsConfig) => {
+  try {
+    const groupsConfig = await getGroupsConfigAsync();
+    const newGroupsConfig = {
+      ...groupsConfig,
+      ...(_newGroupsConfig || {}),
+    };
+    global.app_groupsConfig = newGroupsConfig;
+    const groupsConfigPath = path.join(await getAppSaveDirectoryAsync(), 'groups.json');
+    console.log('update-groups-config-async', groupsConfigPath, newGroupsConfig);
+    writeFileAsync(groupsConfigPath, JSON.stringify(newGroupsConfig, null, 2))
+  } catch (error) {
+    throw new Error(error);
+  }
+})
 
-// const now = Date.now();
-// const defaultGroupsValue = JSON.stringify({
-//   groups: [
-//     {
-//       key: 'group-default',
-//       label: '默认分组',
-//       createTime: now,
-//       updateTime: now,
-//       children: [
-//         {
-//           key: 'group-default-text',
-//           label: '默认文本',
-//           createTime: now,
-//           updateTime: now,
-//           tags: [],
-//         },
-//       ],
-//     },
-//   ],
-// }, null, 2);
+ipcMain.handle('create-note-async', async (event, options) => {
+  try {
+    const {
+      paths = [],
+      content = "",
+    } = options || {};
+    const saveDir = await getAppSaveDirectoryAsync();
+    const notePath = path.join(saveDir, ...paths);
+    await writeFileAsync(notePath, content);
+  } catch (error) {
+    throw new Error(error);
+  }
+})

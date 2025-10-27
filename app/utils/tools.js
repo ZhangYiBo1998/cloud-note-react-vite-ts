@@ -65,8 +65,8 @@ const getAppDocumentsDir = () => {
 
 // 获取 config.json 文件内容
 const getConfigJsonAsync = async (force = false) => {
-  if (global.config && !force) {
-    return global.config;
+  if (global.app_config && !force) {
+    return global.app_config;
   }
   const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
   let configValue, config;
@@ -74,10 +74,13 @@ const getConfigJsonAsync = async (force = false) => {
   if (await isFileExistAsync(configFilePath)) {
     configValue = await readFileAsync(configFilePath) || '{}';
   } else {
+    const saveDirectory = path.join(getAppDocumentsDir(), 'save')
     // 如果 config.json 文件不存在，则创建默认的 config.json 文件
     const defaultConfigValue = JSON.stringify({
-      saveDirectory: path.join(getAppDocumentsDir(), 'save'),
+      saveDirectory,
     }, null, 2);
+    // 确保目录存在，如果不存在则递归创建
+    await fs.mkdir(saveDirectory, {recursive: true});
     await writeFileAsync(configFilePath, defaultConfigValue)
     configValue = defaultConfigValue;
   }
@@ -91,9 +94,45 @@ const getConfigJsonAsync = async (force = false) => {
 }
 
 // 获取应用的保存目录
-const getAppSaveDirectory = async () => {
-  const config = await getAppDocumentsDir();
+const getAppSaveDirectoryAsync = async () => {
+  const config = await getConfigJsonAsync();
   return config.saveDirectory;
+}
+
+const getGroupsConfigAsync = async (force = false) => {
+  if (global.app_groupsConfig && !force) {
+    return global.app_groupsConfig;
+  }
+  const saveDirectory = await getAppSaveDirectoryAsync();
+  const groupsPath = path.join(saveDirectory, 'groups.json');
+  let groupsConfigValue, groupsConfig;
+  // 判断 groups.json 文件是否存在
+  if (await isFileExistAsync(groupsPath)) {
+    groupsConfigValue = await readFileAsync(groupsPath) || '{}';
+  } else {
+    // 如果 groups.json 文件不存在，则创建默认的 groups.json 文件
+    const now = Date.now();
+    const defaultGroupsValue = JSON.stringify({
+      groups: [
+        {
+          key: 'default',
+          name: '默认分组',
+          createTime: now,
+          updateTime: now,
+          children: [],
+        }
+      ],
+    }, null, 2);
+    await writeFileAsync(groupsPath, defaultGroupsValue)
+    groupsConfigValue = defaultGroupsValue;
+  }
+  try {
+    groupsConfig = JSON.parse(groupsConfigValue) || {};
+    return groupsConfig;
+  } catch (error) {
+    console.error('JSON.parse(groupsConfigValue) error', error);
+    return {};
+  }
 }
 
 
@@ -105,5 +144,6 @@ module.exports = {
   isFileExistAsync,
   getAppDocumentsDir,
   getConfigJsonAsync,
-  getAppSaveDirectory,
+  getAppSaveDirectoryAsync,
+  getGroupsConfigAsync,
 };

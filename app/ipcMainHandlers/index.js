@@ -99,13 +99,11 @@ ipcMain.handle('select-save-directory', async (event, defaultPath) => {
       saveDir = path.join(result.filePaths[0], 'save');
       // 确保目录存在，如果不存在则递归创建
       await fs.mkdir(saveDir, {recursive: true});
-    }
-    if (!saveDir) {
+      return saveDir;
+    } else {
       // 用户取消了选择
-      throw new Error('未选择save文件夹');
+      return null;
     }
-
-    return saveDir;
   } catch (error) {
     throw new Error(error);
   }

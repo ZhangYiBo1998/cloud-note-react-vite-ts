@@ -16,7 +16,7 @@ export interface IConfigContextValue {
 
 export interface IMenuItem {
     key: string;
-    label: string;
+    fileName: string;
     createTime: number;
     updateTime: number;
     tags?: string[];

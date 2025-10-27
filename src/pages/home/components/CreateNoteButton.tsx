@@ -75,7 +75,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                 }
                 item.children.push({
                     key: `group-${crypto.randomUUID()}`,
-                    label: `新建笔记${noteTypeMap[typeRef.current]}`,
+                    fileName: `新建笔记${noteTypeMap[typeRef.current]}`,
                     createTime: now,
                     updateTime: now,
                     tags: [],

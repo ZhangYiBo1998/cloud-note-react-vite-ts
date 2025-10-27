@@ -16,6 +16,7 @@ const {
   hideMainWindow,
   getConfigJsonAsync,
   getGroupsConfigAsync,
+  groupsToMapAsync,
 } = require(path.join(__dirname, './utils/tools.js'));
 require(path.join(__dirname, './ipcMainHandlers/index.js'));
 
@@ -110,7 +111,8 @@ const createSystemMenu = (win) => {
 const initAsync = async () => {
   // 设置全局变量
   global.app_config = await getConfigJsonAsync();
-  global.app_groupsConfig = await getGroupsConfigAsync();
+  global.app_groupsConfig = await getGroupsConfigAsync() || {};
+  global.app_groupsConfigMap = await groupsToMapAsync();
 }
 
 app.whenReady().then(async () => {

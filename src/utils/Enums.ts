@@ -1,4 +1,4 @@
 export const FILE_TYPE = {
-    text: "text",
-    Markdown: "Markdown",
+    text: "txt",
+    Markdown: "md",
 }

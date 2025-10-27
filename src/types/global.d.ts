@@ -3,6 +3,7 @@ import type {
     IGroupsContextValue,
     IGroupsConfig,
     ICreateNoteOptions,
+    INoteInfoMap,
 } from "./index";
 
 export interface IElectronAPI {
@@ -29,6 +30,7 @@ export interface IElectronAPI {
     // 更新groups.json文件
     updateGroupsConfigAsync(newGroupsConfig: IGroupsConfig): Promise<void>;
     createNoteAsync(options: ICreateNoteOptions): Promise<void>;
+    readNoteAsync(noteKey: string): Promise<INoteInfoMap>;
 }
 
 declare global {

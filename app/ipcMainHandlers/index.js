@@ -14,6 +14,7 @@ const {
   getConfigJsonAsync,
   getAppDocumentsDir,
   getAppSaveDirectoryAsync,
+  groupsToMapAsync,
 } = require(path.join(__dirname, '../utils/tools.js'));
 const {getGroupsConfigAsync} = require("../utils/tools");
 
@@ -138,9 +139,9 @@ ipcMain.handle('update-groups-config-async', async (event, _newGroupsConfig) => 
       ...groupsConfig,
       ...(_newGroupsConfig || {}),
     };
-    global.app_groupsConfig = newGroupsConfig;
+    global.app_groupsConfig = newGroupsConfig || {};
+    global.app_groupsConfigMap = await groupsToMapAsync();
     const groupsConfigPath = path.join(await getAppSaveDirectoryAsync(), 'groups.json');
-    console.log('update-groups-config-async', groupsConfigPath, newGroupsConfig);
     writeFileAsync(groupsConfigPath, JSON.stringify(newGroupsConfig, null, 2))
   } catch (error) {
     throw new Error(error);
@@ -159,4 +160,19 @@ ipcMain.handle('create-note-async', async (event, options) => {
   } catch (error) {
     throw new Error(error);
   }
+})
+
+ipcMain.handle('read-note-async', async (event, noteKey) => {
+  const noteInfo = global.app_groupsConfigMap?.[noteKey] || {};
+  if (!(noteInfo.key && noteInfo.parent && noteInfo.type === 'file')) {
+    throw new Error('读取笔记异常');
+  }
+
+  const groupInfo = global.app_groupsConfigMap?.[noteInfo.parent] || {};
+  const saveDir = await getAppSaveDirectoryAsync();
+  const notePath = path.join(saveDir, groupInfo.name, noteInfo.name);
+  return {
+    ...noteInfo,
+    content: await readFileAsync(notePath)
+  };
 })

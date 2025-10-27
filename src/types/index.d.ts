@@ -23,6 +23,12 @@ export interface IMenuItem {
     children?: IMenuItem[];
 }
 
+export interface INoteInfoMap extends IMenuItem {
+    content: string;
+    type: 'file' | 'group';
+    parent?: string
+}
+
 export interface IGroupsConfig {
     groups?: IMenuItem[];
 }

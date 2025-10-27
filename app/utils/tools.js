@@ -17,9 +17,10 @@ const hideMainWindow = (win) => {
 
 const readFileAsync = async (filePath, options) => {
   try {
-    const data = await fs.readFile(filePath, options);
-    console.log('文件内容:', data);
-    return data;
+    return await fs.readFile(filePath, {
+      encoding: 'utf-8',
+      ...(options || {})
+    });
   } catch (err) {
     console.error('读取文件出错:', err);
     return null;
@@ -33,7 +34,10 @@ const writeFileAsync = async (filePath, fileData, options) => {
     // 确保目录存在，如果不存在则递归创建
     await fs.mkdir(dirName, {recursive: true});
 
-    await fs.writeFile(filePath, fileData, options);
+    await fs.writeFile(filePath, fileData, {
+      encoding: 'utf-8',
+      ...(options || {})
+    });
     console.log('file has been created!');
   } catch (err) {
     console.error('Error creating files:', err);
@@ -135,6 +139,25 @@ const getGroupsConfigAsync = async (force = false) => {
   }
 }
 
+const groupsToMapAsync = async () => {
+  const groupsConfig = await getGroupsConfigAsync() || {};
+  return groupsConfig.groups?.reduce((obj, item) => {
+    obj[item.key] = {
+      ...item,
+      type: 'group',
+      parent: null,
+    };
+    if (Array.isArray(item.children)) {
+      item.children.forEach((it) => {
+        it.parent = item.key;
+        it.type = 'file';
+        obj[it.key] = it;
+      })
+    }
+    return obj;
+  }, {}) || {};
+}
+
 
 module.exports = {
   showMainWindow,
@@ -146,4 +169,5 @@ module.exports = {
   getConfigJsonAsync,
   getAppSaveDirectoryAsync,
   getGroupsConfigAsync,
+  groupsToMapAsync,
 };

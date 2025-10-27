@@ -28,7 +28,16 @@ interface IEditorProps {
     destroy: () => void;
 }
 
-const ToastUIEditor: React.FC = () => {
+interface IToastUIEditorProps {
+    value: string;
+    onChange?: (markdown: string) => void;
+}
+
+const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
+    const {
+        value,
+        onChange,
+    } = props;
     const editorDomRef = useRef<HTMLDivElement | null>(null);
     const editorInsRef = useRef<IEditorProps>({} as IEditorProps);
 
@@ -37,7 +46,7 @@ const ToastUIEditor: React.FC = () => {
             el: editorDomRef.current,
             height: '400px',
             initialEditType: 'markdown',
-            initialValue: 'markdown text',
+            initialValue: value,
             previewStyle: 'vertical',
             usageStatistics: 'https://github.com/ZhangYiBo1998/cloud-note-react-vite-ts',
             language: 'zh-CN',
@@ -49,12 +58,8 @@ const ToastUIEditor: React.FC = () => {
                 uml,
             ],
             events: {
-                change: (type: string) => {
-                    if (type === 'markdown') {
-                        console.log('change', editorInsRef.current.getMarkdown());
-                    } else {
-                        console.log('change', editorInsRef.current.getMarkdown());
-                    }
+                change: () => {
+                    onChange?.(editorInsRef.current.getMarkdown())
                 }
             },
         });

@@ -12,4 +12,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getNoteGroupsAsync: (saveDir) => ipcRenderer.invoke('get-note-groups-async', saveDir),
   updateGroupsConfigAsync: (newGroupsConfig) => ipcRenderer.invoke('update-groups-config-async', newGroupsConfig),
   createNoteAsync: (options) => ipcRenderer.invoke('create-note-async', options),
+  readNoteAsync: (noteKey) => ipcRenderer.invoke('read-note-async', noteKey),
 })

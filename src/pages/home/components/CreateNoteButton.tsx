@@ -1,6 +1,6 @@
 import React, {useRef, useState, useMemo} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
-import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex} from 'antd';
+import {FloatButton, Tooltip, Modal, Form, Select, Button, Space, Flex, Input} from 'antd';
 import Icon from "../../components/Icon";
 import IconMD from "../../../assets/icon-markdown.svg";
 import type {IGroupsContextValue, IMenuItem} from "../../../types";
@@ -9,7 +9,8 @@ import useNoteInfo from "../../hooks/useNoteInfo";
 
 
 interface IFieldValues {
-    group: string;
+    groupId: string;
+    fileName: string;
 }
 
 const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (props) => {
@@ -60,14 +61,29 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
     }, [groups])
 
     // 创建笔记
-    const createNote = async (groupId: string) => {
-        console.log(groupId);
+    const createNote = async (values: IFieldValues) => {
+        const {
+            groupId,
+            fileName,
+        } = values;
         const noteTypeMap = {
             [FILE_TYPE.text]: '.txt',
             [FILE_TYPE.Markdown]: '.md',
         }
         // 根据groupId找到对应的分组位置
         const targetGroup: IMenuItem = groups.find((item) => item.key === groupId) || {} as IMenuItem;
+        const needRename = targetGroup.children?.find((item) => {
+            return item.name === `${fileName}${noteTypeMap[typeRef.current]}`;
+        });
+        if (needRename) {
+            form.setFields([
+                {
+                    errors: ['文件名重复，请重新输入！'],
+                    name: 'fileName',
+                }
+            ])
+            return;
+        }
         const newGroups = groups.map((item) => {
             if (item.key === groupId) {
                 const now = Date.now();
@@ -76,8 +92,8 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
                     item.children = [];
                 }
                 item.children.push({
-                    key: `group-${crypto.randomUUID()}`,
-                    name: `新建笔记${noteTypeMap[typeRef.current]}`,
+                    key: `${crypto.randomUUID()}`,
+                    name: `${fileName}${noteTypeMap[typeRef.current]}`,
                     createTime: now,
                     updateTime: now,
                     tags: [],
@@ -94,7 +110,7 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
             // 创建笔记文件
             window.electronAPI.createNoteAsync({
-                paths: [targetGroup.name, `新建笔记${noteTypeMap[typeRef.current]}`],
+                paths: [targetGroup.name, `${fileName}${noteTypeMap[typeRef.current]}`],
                 content: '',
             })
         ])
@@ -125,24 +141,33 @@ const CreateNoteButton: React.FC<{ onChange: (fileType: string) => void }> = (pr
             </FloatButton.Group>
             <Modal
                 title="新建"
-                closable={{'aria-label': 'Custom Close Button'}}
                 open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
                 footer={null}
             >
                 <Form
                     form={form}
-                    onFinish={async (values) => {
-                        createNote(values.group);
+                    labelCol={{span: 4}}
+                    wrapperCol={{span: 19}}
+                    onFinish={(values) => {
+                        createNote(values);
                     }}
                     initialValues={{
-                        group: 'default',
+                        groupId: 'default',
                     }}
                 >
                     <Form.Item<IFieldValues>
                         label="分组"
-                        name="group"
+                        name="groupId"
                     >
                         <Select options={groupOptions}/>
+                    </Form.Item>
+                    <Form.Item<IFieldValues>
+                        label="文件名"
+                        name="fileName"
+                        rules={[{required: true, message: '文件名是必填项！'}]}
+                    >
+                        <Input/>
                     </Form.Item>
                     <Flex justify="flex-end">
                         <Space>

@@ -1,5 +1,6 @@
 //设置scss变量
 $container-height: calc(100vh - 90px);
+$container-width: calc(100% - 160px);;
 
 #cloudNoteHome {
   width: 100%;
@@ -26,6 +27,7 @@ $container-height: calc(100vh - 90px);
     }
 
     .right {
+      width: $container-width;
       flex: 1;
     }
   }
@@ -39,6 +41,7 @@ $container-height: calc(100vh - 90px);
     }
 
     .content {
+      width: $container-width;
       flex: 1;
       height: $container-height;
     }

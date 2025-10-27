@@ -28,7 +28,7 @@ const NoteEdit: React.FC = () => {
         })
     }, [params.id]);
 
-    return params.id && (
+    return params.id ? (
         <div className="scrollable" key={params.id}>
             <Flex vertical justify="space-between" gap={10} style={{padding: 10}}>
                 <Select
@@ -61,6 +61,14 @@ const NoteEdit: React.FC = () => {
                     )
                 }
             </Flex>
+            <CreateNoteButton
+                onChange={(type) => {
+                    setEditorType(type)
+                }}
+            />
+        </div>
+    ) : (
+        <div>
             <CreateNoteButton
                 onChange={(type) => {
                     setEditorType(type)

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, memo} from "react";
+import React, {useEffect, useState, memo, useCallback} from "react";
 import {
     Select,
     Input,
@@ -9,6 +9,7 @@ import ToastUIEditor from "../components/ToastUIEditor";
 import {FILE_TYPE} from "../../utils/Enums";
 import {useParams} from "react-router";
 import type {INoteInfoMap} from "../../types";
+import {debounce} from "../../utils/tool";
 
 const NoteEdit: React.FC = () => {
     const params = useParams();
@@ -28,6 +29,17 @@ const NoteEdit: React.FC = () => {
         })
     }, [params.id]);
 
+    useEffect(() => {
+
+    }, [tagsValue]);
+
+    const writeNoteAsync = useCallback(debounce((value: string) => {
+        if (!params.id) {
+            return;
+        }
+        window.electronAPI?.writeNoteAsync(params.id, value)
+    }, 3000), [params.id])
+
     return params.id ? (
         <div className="scrollable" key={params.id}>
             <Flex vertical justify="space-between" gap={10} style={{padding: 10}}>
@@ -46,6 +58,7 @@ const NoteEdit: React.FC = () => {
                             value={noteValue}
                             onChange={(e) => {
                                 setNoteValue(e.target.value)
+                                writeNoteAsync(e.target.value)
                             }}
                         />
                     )
@@ -56,6 +69,7 @@ const NoteEdit: React.FC = () => {
                             value={noteValue}
                             onChange={(v: string) => {
                                 setNoteValue(v)
+                                writeNoteAsync(v)
                             }}
                         />
                     )

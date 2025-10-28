@@ -181,3 +181,15 @@ ipcMain.handle('read-note-async', async (event, noteKey) => {
     content: await readFileAsync(notePath)
   };
 })
+
+ipcMain.handle('write-note-async', async (event, noteKey, content) => {
+  const noteInfo = global.app_groupsConfigMap?.[noteKey] || {};
+  if (!(noteInfo.key && noteInfo.parent && noteInfo.type === 'file')) {
+    throw new Error('修改笔记异常');
+  }
+
+  const groupInfo = global.app_groupsConfigMap?.[noteInfo.parent] || {};
+  const saveDir = await getAppSaveDirectoryAsync();
+  const notePath = path.join(saveDir, groupInfo.name, noteInfo.name);
+  await writeFileAsync(notePath, content);
+})

@@ -31,6 +31,7 @@ export interface IElectronAPI {
     updateGroupsConfigAsync(newGroupsConfig: IGroupsConfig): Promise<void>;
     createNoteAsync(options: ICreateNoteOptions): Promise<void>;
     readNoteAsync(noteKey: string): Promise<INoteInfoMap>;
+    writeNoteAsync(noteKey: string, content: string): Promise<void>;
 }
 
 declare global {

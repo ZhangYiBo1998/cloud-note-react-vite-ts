@@ -13,4 +13,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateGroupsConfigAsync: (newGroupsConfig) => ipcRenderer.invoke('update-groups-config-async', newGroupsConfig),
   createNoteAsync: (options) => ipcRenderer.invoke('create-note-async', options),
   readNoteAsync: (noteKey) => ipcRenderer.invoke('read-note-async', noteKey),
+  writeNoteAsync: (noteKey, content) => ipcRenderer.invoke('write-note-async', noteKey, content),
 })

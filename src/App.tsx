@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Outlet} from "react-router";
 import '@ant-design/v5-patch-for-react-19';
 import SystemHeader from "./components/SystemHeader";
@@ -25,6 +25,24 @@ const App: React.FC = () => {
         closeType: 'hide',
     });
 
+    const groupsMap = useMemo(() => {
+        return groupsConfig?.groups?.reduce((obj, item) => {
+            obj[item.key] = {
+                ...item,
+                type: 'group',
+                parent: null,
+            };
+            if (Array.isArray(item.children)) {
+                item.children.forEach((it: any) => {
+                    it.parent = item.key;
+                    it.type = 'file';
+                    obj[it.key] = it;
+                })
+            }
+            return obj;
+        }, {} as { [key: string]: any }) || {};
+    }, [groupsConfig]);
+
     useEffect(() => {
         const init = async () => {
             // 读取 config.json 的配置项
@@ -45,6 +63,7 @@ const App: React.FC = () => {
     return (
         <ConfigContext value={config}>
             <GroupsContext value={{
+                groupsMap,
                 groupsConfig,
                 setGroupsConfig,
             }}>

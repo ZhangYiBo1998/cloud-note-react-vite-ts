@@ -64,9 +64,9 @@ class EventBus {
    */
   subscribe(key: string, callback: IEventCallback) {
     if (typeof key !== 'string') {
-      return;
+      return '';
     }
-    const id = crypto.randomUUID();
+    const id: string = crypto.randomUUID();
     if (!Array.isArray(this.#events[key])) {
       this.#events[key] = [];
     }
@@ -87,6 +87,7 @@ class EventBus {
     if (typeof key !== 'string') {
       return;
     }
+    console.log(`this.#events[key]`, this.#events[key]);
     (this.#events[key] || []).forEach((event) => {
       const { callback } = event || {};
       if (typeof callback === 'function') {
@@ -136,4 +137,4 @@ class EventBus {
   }
 }
 
-export default EventBus;
+export default new EventBus();

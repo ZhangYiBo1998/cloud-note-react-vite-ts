@@ -4,7 +4,6 @@ import {
     Input,
     Flex,
 } from "antd";
-import CreateNoteButton from "./components/CreateNoteButton";
 import ToastUIEditor from "../components/ToastUIEditor";
 import {FILE_TYPE} from "../../utils/Enums";
 import {useParams} from "react-router";
@@ -18,12 +17,11 @@ const NoteEdit: React.FC = () => {
     const [noteValue, setNoteValue] = useState('');
 
     useEffect(() => {
-        console.log('useParams', params.id);
         if (!params.id) {
             return;
         }
         window.electronAPI?.readNoteAsync(params.id).then((config: INoteInfoMap) => {
-            setEditorType(config.name?.split?.('.')?.[1]);
+            setEditorType(`.${config.name?.split?.('.')?.[1]}`);
             setTagsValue(config.tags || [])
             setNoteValue(config.content)
         })
@@ -40,7 +38,7 @@ const NoteEdit: React.FC = () => {
         window.electronAPI?.writeNoteAsync(params.id, value)
     }, 3000), [params.id])
 
-    return params.id ? (
+    return (
         <div className="scrollable" key={params.id}>
             <Flex vertical justify="space-between" gap={10} style={{padding: 10}}>
                 <Select
@@ -75,19 +73,6 @@ const NoteEdit: React.FC = () => {
                     )
                 }
             </Flex>
-            <CreateNoteButton
-                onChange={(type) => {
-                    setEditorType(type)
-                }}
-            />
-        </div>
-    ) : (
-        <div>
-            <CreateNoteButton
-                onChange={(type) => {
-                    setEditorType(type)
-                }}
-            />
         </div>
     );
 };

@@ -14,28 +14,36 @@ export interface IConfigContextValue {
     saveDirectory?: string;
 }
 
-export interface IMenuItem {
+export interface INoteItem {
     key: string;
     name: string;
     createTime: number;
     updateTime: number;
-    tags?: string[];
-    children?: IMenuItem[];
+    tags: string[];
 }
 
-export interface INoteInfoMap extends IMenuItem {
+export interface IGroupsItem {
+    key: string;
+    name: string;
+    createTime: number;
+    updateTime: number;
+    children: INoteItem[];
+}
+
+export interface INoteInfoMap extends INoteItem {
     content: string;
     type: 'file' | 'group';
     parent?: string
 }
 
 export interface IGroupsConfig {
-    groups?: IMenuItem[];
+    groups?: IGroupsItem[];
 }
 
 export interface IGroupsContextValue {
     groupsConfig: IGroupsConfig,
     setGroupsConfig: Dispatch<SetStateAction<IGroupsConfig>>;
+    groupsMap: { [key: string]: any }
 }
 
 export interface ICreateNoteOptions {

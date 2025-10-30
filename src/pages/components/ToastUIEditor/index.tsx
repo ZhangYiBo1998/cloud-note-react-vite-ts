@@ -29,12 +29,14 @@ interface IEditorProps {
 }
 
 interface IToastUIEditorProps {
+    style?: React.CSSProperties;
     value: string;
     onChange?: (markdown: string) => void;
 }
 
 const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
     const {
+        style,
         value,
         onChange,
     } = props;
@@ -44,8 +46,9 @@ const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
     useEffect(() => {
         editorInsRef.current = new Editor({
             el: editorDomRef.current,
-            height: '400px',
-            initialEditType: 'markdown',
+            height: style?.height || '400px',
+            // Initial editor type (markdown, wysiwyg)
+            initialEditType: 'wysiwyg',
             initialValue: value,
             previewStyle: 'vertical',
             usageStatistics: 'https://github.com/ZhangYiBo1998/cloud-note-react-vite-ts',
@@ -76,7 +79,7 @@ const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
 
 
     return (
-        <div ref={editorDomRef}/>
+        <div ref={editorDomRef} style={style} />
     );
 };
 

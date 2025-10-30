@@ -14,40 +14,47 @@ export interface IConfigContextValue {
     saveDirectory?: string;
 }
 
-export interface INoteItem {
+export interface ICommonItem {
     key: string;
     name: string;
     createTime: number;
     updateTime: number;
+}
+
+export interface INoteItem extends ICommonItem {
     tags: string[];
 }
 
-export interface IGroupsItem {
-    key: string;
-    name: string;
-    createTime: number;
-    updateTime: number;
+export interface IGroupsItem extends ICommonItem {
     children: INoteItem[];
-}
-
-export interface INoteInfoMap extends INoteItem {
-    content: string;
-    type: 'file' | 'group';
-    parent?: string
 }
 
 export interface IGroupsConfig {
     groups?: IGroupsItem[];
 }
 
+export interface INoteItemMap extends INoteItem {
+    type: 'file';
+    parent: string
+}
+
+export interface IGroupsItemMap extends IGroupsItem {
+    type: 'group';
+    parent: null | undefined;
+}
+
+export interface IGroupsMap {
+    [key: string]: INoteItemMap | IGroupsItemMap;
+}
+
 export interface IGroupsContextValue {
     groupsConfig: IGroupsConfig,
     setGroupsConfig: Dispatch<SetStateAction<IGroupsConfig>>;
-    groupsMap: { [key: string]: any }
+    groupsMap: IGroupsMap;
 }
 
 export interface ICreateNoteOptions {
     paths: string[];
+    type: 'file' | 'group';
     content?: string;
-    type?: 'file' | 'group'
 }

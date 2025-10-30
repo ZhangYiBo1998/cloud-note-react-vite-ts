@@ -176,10 +176,7 @@ ipcMain.handle('read-note-async', async (event, noteKey) => {
   const groupInfo = global.app_groupsConfigMap?.[noteInfo.parent] || {};
   const saveDir = await getAppSaveDirectoryAsync();
   const notePath = path.join(saveDir, groupInfo.name, noteInfo.name);
-  return {
-    ...noteInfo,
-    content: await readFileAsync(notePath)
-  };
+  return await readFileAsync(notePath);
 })
 
 ipcMain.handle('write-note-async', async (event, noteKey, content) => {

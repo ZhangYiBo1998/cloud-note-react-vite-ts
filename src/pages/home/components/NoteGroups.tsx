@@ -1,36 +1,22 @@
-import React, {memo, useState, useMemo, useEffect} from "react";
+import React, {memo, useState, useMemo} from "react";
 import {Menu, Button} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
 import useNoteInfo from "../../hooks/useNoteInfo";
 import CreateNewModal from "./CreateNewModal";
-import eventBus from "../../../utils/EventBus";
-
+import type {IGroupsItem, INoteItem} from "../../../types";
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
     const {
         groups,
         groupsMap,
+        setGroupsConfig,
     } = useNoteInfo()
-
 
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    useEffect(() => {
-        const id = eventBus.subscribe('open-group-by-key', (groupKey: string, noteKey) => {
-            const group = groupsMap[groupKey];
-            setSelectedKeys([noteKey])
-            setOpenKeys((pre) => {
-                return Array.from(new Set([...pre, group.key]))
-            })
-        })
-        return () => {
-            eventBus.unsubscribe(id);
-        }
-    }, [groupsMap]);
 
     const items = useMemo(() => {
         return groups.map((group) => {
@@ -54,6 +40,80 @@ const NoteGroups: React.FC = () => {
     const onOpenChange: MenuProps['onOpenChange'] = (_openKeys) => {
         setOpenKeys(_openKeys)
     };
+
+    // 创建新分组
+    const createNewGroup = async (data: IGroupsItem) => {
+        const _groups = [...groups, data];
+        const _groupsConfig = {
+            groups: _groups,
+        };
+        setGroupsConfig(_groupsConfig)
+        await Promise.all([
+            // 重新生成groups.json文件
+            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
+            // 创建笔记文件
+            window.electronAPI.createNoteAsync({
+                paths: [data.name],
+                type: 'group',
+            })
+        ])
+    }
+
+    // 在已有分组下创建新笔记
+    const createNewNoteInGroup = async (data: INoteItem, groupKey: string) => {
+        const targetGroup = {...(groupsMap[groupKey] || {})} as IGroupsItem;
+        const newGroups = [...groups].map((item) => {
+            if (item.key === groupKey) {
+                // 往对应的分组位置插入新的笔记
+                if (!item.children) {
+                    item.children = [];
+                }
+                item.children.push(data);
+            }
+            return item;
+        })
+        const _groupsConfig = {
+            groups: newGroups,
+        }
+        setGroupsConfig(_groupsConfig)
+        await Promise.all([
+            // 重新生成groups.json文件
+            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
+            // 创建笔记文件
+            window.electronAPI.createNoteAsync({
+                paths: [targetGroup.name, `${data.name}`],
+                type: 'file',
+                content: '',
+            })
+        ])
+        navigate(`/home/note/${data.key}`)
+        setSelectedKeys([data.key])
+        setOpenKeys((pre) => {
+            return Array.from(new Set([...pre, targetGroup.key]))
+        })
+    }
+
+    // const deleteGroup = (groupKey: string) => {
+    //     const newGroups = groups.filter((item) => item.key !== groupKey);
+    //     setGroupsConfig({
+    //         groups: newGroups,
+    //     })
+    // }
+    //
+    // const deleteNoteInGroup = (noteKey: string) => {
+    //     const targetNote = {...(groupsMap[noteKey] || {})};
+    //     const targetGroup: IGroupsItem = {...(groupsMap[targetNote.parent] || {})};
+    //     if (!targetGroup.children) {
+    //         targetGroup.children = [];
+    //     }
+    //     targetGroup.children = targetGroup.children.filter((item) => item.key !== noteKey);
+    //     const newGroups = [...groups];
+    //     const index = newGroups.findIndex((item) => item.key === targetGroup.key);
+    //     newGroups[index] = targetGroup;
+    //     setGroupsConfig({
+    //         groups: newGroups,
+    //     })
+    // }
 
     return (
         <div className="scrollable" style={{background: '#FAFAFA', height: '100%'}}>
@@ -85,6 +145,8 @@ const NoteGroups: React.FC = () => {
             <CreateNewModal
                 visible={isModalOpen}
                 visibleChange={setIsModalOpen}
+                createNewGroup={createNewGroup}
+                createNewNoteInGroup={createNewNoteInGroup}
             />
         </div>
     );

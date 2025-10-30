@@ -2,9 +2,7 @@ import React, {memo, useMemo} from "react";
 import {Button, Modal, Form, Input, Flex, Space, Radio, Select} from "antd";
 import useNoteInfo from "../../hooks/useNoteInfo";
 import {FILE_TYPE} from "../../../utils/Enums";
-import type {IGroupsConfig, IGroupsContextValue, IGroupsItem} from "../../../types";
-import {useNavigate} from "react-router";
-import eventBus from "../../../utils/EventBus";
+import type {IGroupsItem, INoteItem} from "../../../types";
 
 interface IFieldValues {
     type: number;
@@ -17,18 +15,20 @@ interface IFieldValues {
 interface IProps {
     visible: boolean;
     visibleChange: (visible: boolean) => void;
+    createNewGroup: (data: IGroupsItem) => Promise<void>;
+    createNewNoteInGroup: (data: INoteItem, groupKey: string) => Promise<void>;
 }
 
 const CreateNewModal: React.FC<IProps> = (props) => {
     const {
         visible,
         visibleChange,
+        createNewGroup,
+        createNewNoteInGroup,
     } = props;
 
-    const navigate = useNavigate();
     const {
         groups,
-        setGroupsConfig,
     } = useNoteInfo()
 
     const [form] = Form.useForm();
@@ -59,28 +59,13 @@ const CreateNewModal: React.FC<IProps> = (props) => {
             ])
             return;
         }
-        const _groupsConfig = {
-            groups: [
-                ...groups,
-                {
-                    key: `${crypto.randomUUID()}`,
-                    name: values.groupName,
-                    createTime: now,
-                    updateTime: now,
-                    children: [],
-                }
-            ],
-        } as IGroupsConfig
-        setGroupsConfig(_groupsConfig)
-        await Promise.all([
-            // 重新生成groups.json文件
-            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
-            // 创建笔记文件
-            window.electronAPI.createNoteAsync({
-                paths: [values.groupName as string],
-                type: 'group',
-            })
-        ])
+        await createNewGroup({
+            key: `${crypto.randomUUID()}`,
+            name: values.groupName as string,
+            createTime: now,
+            updateTime: now,
+            children: [],
+        })
         visibleChange(false);
     }
     // 创建笔记
@@ -103,39 +88,16 @@ const CreateNewModal: React.FC<IProps> = (props) => {
             ])
             return;
         }
-        const randomUUID = crypto.randomUUID()
-        const newGroups = groups.map((item) => {
-            if (item.key === groupKey) {
-                const now = Date.now();
-                // 往对应的分组位置插入新的笔记
-                if (!item.children) {
-                    item.children = [];
-                }
-                item.children.push({
-                    key: `${randomUUID}`,
-                    name: `${fileName}${values.fileType}`,
-                    createTime: now,
-                    updateTime: now,
-                    tags: [],
-                });
-            }
-            return item;
-        })
-        const _groupsConfig = {
-            groups: newGroups,
-        }
-        setGroupsConfig(_groupsConfig as IGroupsContextValue['groupsConfig']);
-        await Promise.all([
-            // 重新生成groups.json文件
-            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
-            // 创建笔记文件
-            window.electronAPI.createNoteAsync({
-                paths: [targetGroup.name, `${fileName}${values.fileType}`],
-                content: '',
-            })
-        ])
-        navigate(`/home/note/${randomUUID}`)
-        eventBus.publish('open-group-by-key', groupKey, randomUUID)
+        const randomUUID = crypto.randomUUID();
+        const now = Date.now();
+
+        await createNewNoteInGroup({
+            key: `${randomUUID}`,
+            name: `${fileName}${values.fileType}`,
+            createTime: now,
+            updateTime: now,
+            tags: [],
+        }, groupKey as string)
         visibleChange(false);
     }
 

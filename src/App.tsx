@@ -11,6 +11,7 @@ import type {
     ISettings,
     IConfigContextValue,
     IGroupsContextValue,
+    IGroupsMap,
 } from "./types";
 import './App.css'
 
@@ -24,24 +25,6 @@ const App: React.FC = () => {
         theme: 'light',
         closeType: 'hide',
     });
-
-    const groupsMap = useMemo(() => {
-        return groupsConfig?.groups?.reduce((obj, item) => {
-            obj[item.key] = {
-                ...item,
-                type: 'group',
-                parent: null,
-            };
-            if (Array.isArray(item.children)) {
-                item.children.forEach((it: any) => {
-                    it.parent = item.key;
-                    it.type = 'file';
-                    obj[it.key] = it;
-                })
-            }
-            return obj;
-        }, {} as { [key: string]: any }) || {};
-    }, [groupsConfig]);
 
     useEffect(() => {
         const init = async () => {
@@ -59,6 +42,24 @@ const App: React.FC = () => {
         }
         init();
     }, []);
+
+    const groupsMap = useMemo(() => {
+        return groupsConfig?.groups?.reduce((obj, item) => {
+            obj[item.key] = {
+                ...item,
+                type: 'group',
+                parent: null,
+            };
+            if (Array.isArray(item.children)) {
+                item.children.forEach((it: any) => {
+                    it.parent = item.key;
+                    it.type = 'file';
+                    obj[it.key] = it;
+                })
+            }
+            return obj;
+        }, {} as IGroupsMap) || {};
+    }, [groupsConfig]);
 
     return (
         <ConfigContext value={config}>

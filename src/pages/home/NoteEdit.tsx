@@ -7,11 +7,15 @@ import {
 import ToastUIEditor from "../components/ToastUIEditor";
 import {FILE_TYPE} from "../../utils/Enums";
 import {useParams} from "react-router";
-import type {INoteInfoMap} from "../../types";
+import type {INoteItem} from "../../types";
 import {debounce} from "../../utils/tool";
+import useNoteInfo from "../hooks/useNoteInfo";
 
 const NoteEdit: React.FC = () => {
     const params = useParams();
+    const {
+        groupsMap,
+    } = useNoteInfo()
     const [editorType, setEditorType] = useState('txt');
     const [tagsValue, setTagsValue] = useState<string[]>([]);
     const [noteValue, setNoteValue] = useState('');
@@ -20,10 +24,11 @@ const NoteEdit: React.FC = () => {
         if (!params.id) {
             return;
         }
-        window.electronAPI?.readNoteAsync(params.id).then((config: INoteInfoMap) => {
-            setEditorType(`.${config.name?.split?.('.')?.[1]}`);
-            setTagsValue(config.tags || [])
-            setNoteValue(config.content)
+        window.electronAPI?.readNoteAsync(params.id).then((data: string) => {
+            const noteInfo = groupsMap[params.id as string] as INoteItem;
+            setEditorType(`.${noteInfo.name?.split?.('.')?.[1]}`);
+            setTagsValue(noteInfo.tags || [])
+            setNoteValue(data)
         })
     }, [params.id]);
 
@@ -40,10 +45,10 @@ const NoteEdit: React.FC = () => {
 
     return (
         <div className="scrollable" key={params.id}>
-            <Flex vertical justify="space-between" gap={10} style={{padding: 10}}>
+            <Flex vertical gap={10} style={{padding: 10}}>
                 <Select
                     mode="tags"
-                    style={{ width: '100%' }}
+                    style={{width: '100%'}}
                     placeholder="Tags Mode"
                     value={tagsValue}
                     onChange={setTagsValue}
@@ -51,8 +56,11 @@ const NoteEdit: React.FC = () => {
                 {
                     editorType === FILE_TYPE.text && (
                         <Input.TextArea
+                            style={{
+                                height: 'calc(100vh - 160px)'
+                            }}
                             placeholder="内容"
-                            autoSize={{minRows: 17, maxRows: 17}}
+                            // autoSize={{minRows: 17, maxRows: 17}}
                             value={noteValue}
                             onChange={(e) => {
                                 setNoteValue(e.target.value)
@@ -64,6 +72,9 @@ const NoteEdit: React.FC = () => {
                 {
                     editorType === FILE_TYPE.Markdown && (
                         <ToastUIEditor
+                            style={{
+                                height: 'calc(100vh - 160px)'
+                            }}
                             value={noteValue}
                             onChange={(v: string) => {
                                 setNoteValue(v)

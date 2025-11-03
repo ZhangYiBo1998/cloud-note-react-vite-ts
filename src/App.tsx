@@ -45,7 +45,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const timeId = setInterval(() => {
-            window.electronAPI?.pushToGitHub()
+            window.electronAPI?.pushToGitHubAsync()
         }, 1000 * 60 * 5);
 
         return () => {

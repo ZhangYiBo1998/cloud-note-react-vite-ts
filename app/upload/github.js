@@ -25,7 +25,7 @@ async function checkGitStatusChange() {
   return statusOutput.trim().length > 0;
 }
 
-async function initGitHub(url) {
+async function initGitHubAsync(url) {
   try {
     console.log('开始初始化 GitHub 仓库...');
     // 1. 初始化 Git 仓库
@@ -69,7 +69,7 @@ async function initGitHub(url) {
   }
 }
 
-async function pushToGitHub() {
+async function pushToGitHubAsync() {
   try {
     await executeGitCommand('git pull origin master');
     console.log('拉取最新数据');
@@ -96,6 +96,6 @@ async function pushToGitHub() {
 
 
 module.exports = {
-  initGitHub,
-  pushToGitHub,
+  initGitHubAsync,
+  pushToGitHubAsync,
 };

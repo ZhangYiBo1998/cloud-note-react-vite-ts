@@ -18,6 +18,9 @@ const {
   getGroupsConfigAsync,
   groupsToMapAsync,
 } = require(path.join(__dirname, './utils/tools.js'));
+const {
+  pushToGitHubAsync,
+} = require('./upload/github')
 require(path.join(__dirname, './ipcMainHandlers/index.js'));
 
 // 主要用于处理 Windows 平台上 Electron 应用的安装、更新和卸载过程中的一些特殊事件，确保这些过程能顺畅进行。
@@ -139,6 +142,11 @@ app.on('window-all-closed', function () {
 });
 
 // 应用即将退出时，注销所有快捷键
-app.on('will-quit', () => {
+app.on('will-quit', async () => {
   globalShortcut.unregisterAll();
+  const config = await getConfigJsonAsync();
+  const {gitUrl} = config || {};
+  if (gitUrl) {
+    await pushToGitHubAsync();
+  }
 });

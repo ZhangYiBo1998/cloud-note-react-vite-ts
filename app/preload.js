@@ -15,6 +15,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readNoteAsync: (noteKey) => ipcRenderer.invoke('read-note-async', noteKey),
   writeNoteAsync: (noteKey, content) => ipcRenderer.invoke('write-note-async', noteKey, content),
   deleteGroupAsync: (groupKey) => ipcRenderer.invoke('delete-group-async', groupKey),
-  initGitHub: (gitUrl) => ipcRenderer.invoke('init-github', gitUrl),
-  pushToGitHub: () => ipcRenderer.invoke('push-to-github'),
+  initGitHubAsync: (gitUrl) => ipcRenderer.invoke('init-github', gitUrl),
+  pushToGitHubAsync: () => ipcRenderer.invoke('push-to-github'),
 })

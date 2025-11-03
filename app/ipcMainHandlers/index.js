@@ -19,8 +19,8 @@ const {
   updateGroupsConfigAsync,
 } = require('../utils/tools');
 const {
-  initGitHub,
-  pushToGitHub,
+  initGitHubAsync,
+  pushToGitHubAsync,
 } = require('../upload/github')
 
 // 最小化到托盘
@@ -234,8 +234,8 @@ ipcMain.handle('delete-note-in-group-async', async (event, noteKey) => {
 })
 
 ipcMain.handle('init-github', async (event, githubUrl) => {
-  await initGitHub(githubUrl)
+  await initGitHubAsync(githubUrl)
 })
 ipcMain.handle('push-to-github', async (event) => {
-  await pushToGitHub()
+  await pushToGitHubAsync()
 })

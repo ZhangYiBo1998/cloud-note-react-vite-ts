@@ -82,6 +82,7 @@ const getConfigJsonAsync = async (force = false) => {
     // 如果 config.json 文件不存在，则创建默认的 config.json 文件
     const defaultConfigValue = JSON.stringify({
       saveDirectory,
+      gitUrl: '',
     }, null, 2);
     // 确保目录存在，如果不存在则递归创建
     await fs.mkdir(saveDirectory, {recursive: true});

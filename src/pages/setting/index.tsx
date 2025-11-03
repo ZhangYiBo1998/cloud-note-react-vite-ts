@@ -43,7 +43,7 @@ const Setting: React.FC = () => {
         }
     }
 
-    const initGitHub = async () => {
+    const saveGitUrl = async () => {
         Modal.confirm({
             title: '提示',
             content: '确认修改仓库地址？',
@@ -52,7 +52,7 @@ const Setting: React.FC = () => {
             onOk: async () => {
                 const gitUrl = form.getFieldValue('gitUrl')
                 preGitUrl = gitUrl;
-                window.electronAPI?.initGitHub(gitUrl)
+                window.electronAPI?.initGitHubAsync(gitUrl)
             },
             onCancel: () => {
                 setEditDisable(true);
@@ -80,7 +80,7 @@ const Setting: React.FC = () => {
                         addonAfter={
                             editDisable
                                 ? <EditOutlined onClick={() => setEditDisable(false)}/>
-                                : <SaveOutlined onClick={initGitHub}/>
+                                : <SaveOutlined onClick={saveGitUrl}/>
                         }
                     />
                 </Form.Item>

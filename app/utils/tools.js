@@ -139,6 +139,22 @@ const getGroupsConfigAsync = async (force = false) => {
   }
 }
 
+const updateGroupsConfigAsync = async (_newGroupsConfig) => {
+  try {
+    const groupsConfig = await getGroupsConfigAsync();
+    const newGroupsConfig = {
+      ...groupsConfig,
+      ...(_newGroupsConfig || {}),
+    };
+    global.app_groupsConfig = newGroupsConfig || {};
+    global.app_groupsConfigMap = await groupsToMapAsync();
+    const groupsConfigPath = path.join(await getAppSaveDirectoryAsync(), 'groups.json');
+    await writeFileAsync(groupsConfigPath, JSON.stringify(newGroupsConfig, null, 2))
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
 const groupsToMapAsync = async () => {
   const groupsConfig = await getGroupsConfigAsync() || {};
   return groupsConfig.groups?.reduce((obj, item) => {
@@ -169,5 +185,6 @@ module.exports = {
   getConfigJsonAsync,
   getAppSaveDirectoryAsync,
   getGroupsConfigAsync,
+  updateGroupsConfigAsync,
   groupsToMapAsync,
 };

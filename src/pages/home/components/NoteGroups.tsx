@@ -1,10 +1,10 @@
 import React, {memo, useState, useMemo} from "react";
-import {Menu, Button} from "antd";
+import {Menu, Button, Dropdown, Modal} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
 import useNoteInfo from "../../hooks/useNoteInfo";
 import CreateNewModal from "./CreateNewModal";
-import type {IGroupsItem, INoteItem} from "../../../types";
+import type {IGroupsItem, IGroupsItemMap, INoteItem} from "../../../types";
 
 const NoteGroups: React.FC = () => {
     const navigate = useNavigate();
@@ -22,11 +22,59 @@ const NoteGroups: React.FC = () => {
         return groups.map((group) => {
             return {
                 key: group.key,
-                label: group.name,
+                label: (
+                    <Dropdown menu={{
+                        items: [
+                            {
+                                label: '删除分组',
+                                key: 'delete',
+                            },
+                            {
+                                label: '重命名',
+                                key: 'rename',
+                            },
+                        ],
+                        onClick: async ({key}: { key: string }) => {
+                            if (key === 'delete') {
+                                await deleteGroup(group.key)
+                            } else if (key === 'rename') {
+                                console.log(`rename`);
+                            }
+                        }
+                    }} trigger={['contextMenu']}>
+                        <div>
+                            {group.name}
+                        </div>
+                    </Dropdown>
+                ),
                 children: (group.children || []).map((child) => {
                     return {
                         key: child.key,
-                        label: child.name,
+                        label: (
+                            <Dropdown menu={{
+                                items: [
+                                    {
+                                        label: '删除笔记',
+                                        key: 'delete',
+                                    },
+                                    {
+                                        label: '重命名',
+                                        key: 'rename',
+                                    },
+                                ],
+                                onClick: async ({key}: { key: string }) => {
+                                    if (key === 'delete') {
+                                        await deleteNoteInGroup(child.key)
+                                    } else if (key === 'rename') {
+                                        console.log(`rename`);
+                                    }
+                                }
+                            }} trigger={['contextMenu']}>
+                                <div>
+                                    {child.name}
+                                </div>
+                            </Dropdown>
+                        ),
                     }
                 })
             }
@@ -61,7 +109,7 @@ const NoteGroups: React.FC = () => {
 
     // 在已有分组下创建新笔记
     const createNewNoteInGroup = async (data: INoteItem, groupKey: string) => {
-        const targetGroup = {...(groupsMap[groupKey] || {})} as IGroupsItem;
+        const targetGroup = {...(groupsMap[groupKey] || {})} as IGroupsItemMap;
         const newGroups = [...groups].map((item) => {
             if (item.key === groupKey) {
                 // 往对应的分组位置插入新的笔记
@@ -93,27 +141,31 @@ const NoteGroups: React.FC = () => {
         })
     }
 
-    // const deleteGroup = (groupKey: string) => {
-    //     const newGroups = groups.filter((item) => item.key !== groupKey);
-    //     setGroupsConfig({
-    //         groups: newGroups,
-    //     })
-    // }
-    //
-    // const deleteNoteInGroup = (noteKey: string) => {
-    //     const targetNote = {...(groupsMap[noteKey] || {})};
-    //     const targetGroup: IGroupsItem = {...(groupsMap[targetNote.parent] || {})};
-    //     if (!targetGroup.children) {
-    //         targetGroup.children = [];
-    //     }
-    //     targetGroup.children = targetGroup.children.filter((item) => item.key !== noteKey);
-    //     const newGroups = [...groups];
-    //     const index = newGroups.findIndex((item) => item.key === targetGroup.key);
-    //     newGroups[index] = targetGroup;
-    //     setGroupsConfig({
-    //         groups: newGroups,
-    //     })
-    // }
+    const deleteGroup = async (groupKey: string) => {
+        Modal.confirm({
+            title: '提示',
+            content: '确认删除？',
+            okText: '确认',
+            cancelText: '取消',
+            onOk: async () => {
+                const newGroupsConfig = await window.electronAPI.deleteGroupAsync(groupKey);
+                setGroupsConfig(newGroupsConfig)
+            },
+        })
+    }
+
+    const deleteNoteInGroup = async (noteKey: string) => {
+        Modal.confirm({
+            title: '提示',
+            content: '确认删除？',
+            okText: '确认',
+            cancelText: '取消',
+            onOk: async () => {
+                const newGroupsConfig = await window.electronAPI.deleteNoteInGroupAsync(noteKey)
+                setGroupsConfig(newGroupsConfig)
+            },
+        })
+    }
 
     return (
         <div className="scrollable" style={{background: '#FAFAFA', height: '100%'}}>

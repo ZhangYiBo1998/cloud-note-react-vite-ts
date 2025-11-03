@@ -14,4 +14,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createNoteAsync: (options) => ipcRenderer.invoke('create-note-async', options),
   readNoteAsync: (noteKey) => ipcRenderer.invoke('read-note-async', noteKey),
   writeNoteAsync: (noteKey, content) => ipcRenderer.invoke('write-note-async', noteKey, content),
+  deleteGroupAsync: (groupKey) => ipcRenderer.invoke('delete-group-async', groupKey),
+  deleteNoteInGroupAsync: (noteKey) => ipcRenderer.invoke('delete-note-in-group-async', noteKey),
 })

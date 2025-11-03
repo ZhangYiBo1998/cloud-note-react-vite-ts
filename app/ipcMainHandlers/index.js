@@ -15,6 +15,7 @@ const {
   getAppDocumentsDir,
   getAppSaveDirectoryAsync,
   groupsToMapAsync,
+  updateGroupsConfigAsync,
 } = require(path.join(__dirname, '../utils/tools.js'));
 const {getGroupsConfigAsync} = require("../utils/tools");
 
@@ -70,18 +71,7 @@ ipcMain.handle('get-config-json-async', async (event, force) => {
 
 // 更新配置文件
 ipcMain.handle('update-config-json-async', async (event, _config) => {
-  try {
-    const config = await getConfigJsonAsync();
-    const newConfig = {
-      ...config,
-      ...(_config || {}),
-    };
-    global.app_config = newConfig;
-    const configFilePath = path.join(getAppDocumentsDir(), 'config.json');
-    writeFileAsync(configFilePath, JSON.stringify(newConfig, null, 2))
-  } catch (error) {
-    throw new Error(error);
-  }
+  await updateGroupsConfigAsync(_config)
 })
 
 // 监听渲染进程选择文件夹的请求
@@ -189,4 +179,52 @@ ipcMain.handle('write-note-async', async (event, noteKey, content) => {
   const saveDir = await getAppSaveDirectoryAsync();
   const notePath = path.join(saveDir, groupInfo.name, noteInfo.name);
   await writeFileAsync(notePath, content);
+})
+
+ipcMain.handle('delete-group-async', async (event, groupKey) => {
+  const groupInfo = global.app_groupsConfigMap?.[groupKey] || {};
+  const saveDir = await getAppSaveDirectoryAsync();
+  const groupPath = path.join(saveDir, groupInfo.name);
+  try {
+    await fs.rm(groupPath, {recursive: true, force: true});
+    const groupsConfig = await getGroupsConfigAsync();
+    const newGroups = (groupsConfig.groups || []).filter(g => g.key !== groupKey);
+    const newGroupsConfig = {
+      ...groupsConfig,
+      groups: newGroups,
+    };
+    await updateGroupsConfigAsync(newGroupsConfig)
+    console.log('文件夹删除成功！');
+    return newGroupsConfig;
+  } catch (err) {
+    console.error('删除失败：', err);
+    return await getGroupsConfigAsync();
+  }
+})
+
+ipcMain.handle('delete-note-in-group-async', async (event, noteKey) => {
+  const noteInfo = global.app_groupsConfigMap?.[noteKey] || {};
+  const targetGroup = global.app_groupsConfigMap?.[noteInfo.parent] || {};
+  const saveDir = await getAppSaveDirectoryAsync();
+  const notePath = path.join(saveDir, targetGroup.name, noteInfo.name);
+  try {
+    await fs.unlink(notePath);
+    const groupsConfig = await getGroupsConfigAsync();
+    const newGroups = (groupsConfig.groups || []).map((group) => {
+      if (group.key === noteInfo.parent) {
+        group.children = group.children.filter((note) => note.key !== noteKey);
+      }
+      return group;
+    });
+    const newGroupsConfig = {
+      ...groupsConfig,
+      groups: newGroups,
+    };
+    await updateGroupsConfigAsync(newGroupsConfig)
+    console.log('文件夹删除成功！');
+    return newGroupsConfig;
+  } catch (err) {
+    console.error('删除失败：', err);
+    return await getGroupsConfigAsync();
+  }
 })

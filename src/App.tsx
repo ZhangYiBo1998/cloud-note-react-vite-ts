@@ -44,7 +44,13 @@ const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        const timeId = setInterval(() => {
+            window.electronAPI?.pushToGitHub()
+        }, 1000 * 60 * 5);
 
+        return () => {
+            clearInterval(timeId)
+        };
     }, []);
 
     const groupsMap = useMemo(() => {

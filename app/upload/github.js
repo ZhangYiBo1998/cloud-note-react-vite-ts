@@ -20,6 +20,11 @@ function executeGitCommand(command, options) {
   });
 }
 
+async function checkGitStatusChange() {
+  const statusOutput = await executeGitCommand('git status --porcelain');
+  return statusOutput.trim().length > 0;
+}
+
 async function initGitHub(url) {
   try {
     console.log('开始初始化 GitHub 仓库...');
@@ -66,16 +71,20 @@ async function initGitHub(url) {
 
 async function pushToGitHub() {
   try {
-    console.log('开始推送更改到 GitHub...');
+    if (await checkGitStatusChange()) {
+      console.log('开始推送更改到 GitHub...');
 
-    await executeGitCommand('git add .');
-    console.log('文件已暂存');
+      await executeGitCommand('git add .');
+      console.log('文件已暂存');
 
-    await executeGitCommand(`git commit -m "Auto-save from cloudNote ${new Date().toLocaleString()}"`);
-    console.log('更改已提交');
+      await executeGitCommand(`git commit -m "Auto-save from cloudNote ${new Date().toLocaleString()}"`);
+      console.log('更改已提交');
 
-    await executeGitCommand('git push origin master');
-    console.log('成功推送到 GitHub！');
+      await executeGitCommand('git push origin master');
+      console.log('成功推送到 GitHub！');
+    } else {
+      console.log('没有检测到更改，跳过推送。');
+    }
   } catch (error) {
     console.error('推送失败：', error);
     throw error;

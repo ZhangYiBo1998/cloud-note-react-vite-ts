@@ -15,9 +15,13 @@ const {
   getAppDocumentsDir,
   getAppSaveDirectoryAsync,
   groupsToMapAsync,
+  getGroupsConfigAsync,
   updateGroupsConfigAsync,
-} = require(path.join(__dirname, '../utils/tools.js'));
-const {getGroupsConfigAsync} = require("../utils/tools");
+} = require('../utils/tools');
+const {
+  initGitHub,
+  pushToGitHub,
+} = require('../upload/github')
 
 // 最小化到托盘
 ipcMain.on('window-hide', (event) => {
@@ -227,4 +231,11 @@ ipcMain.handle('delete-note-in-group-async', async (event, noteKey) => {
     console.error('删除失败：', err);
     return await getGroupsConfigAsync();
   }
+})
+
+ipcMain.handle('init-github', async (event, githubUrl) => {
+  await initGitHub(githubUrl)
+})
+ipcMain.handle('push-to-github', async (event) => {
+  await pushToGitHub()
 })

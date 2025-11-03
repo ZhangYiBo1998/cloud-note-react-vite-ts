@@ -43,6 +43,10 @@ const App: React.FC = () => {
         init();
     }, []);
 
+    useEffect(() => {
+
+    }, []);
+
     const groupsMap = useMemo(() => {
         return groupsConfig?.groups?.reduce((obj, item) => {
             obj[item.key] = {

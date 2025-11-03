@@ -71,6 +71,9 @@ async function initGitHub(url) {
 
 async function pushToGitHub() {
   try {
+    await executeGitCommand('git pull origin master');
+    console.log('拉取最新数据');
+
     if (await checkGitStatusChange()) {
       console.log('开始推送更改到 GitHub...');
 

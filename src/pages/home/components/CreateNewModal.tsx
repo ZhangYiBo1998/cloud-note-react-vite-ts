@@ -68,7 +68,7 @@ const CreateNewModal: React.FC<IProps> = (props) => {
             return;
         }
         await createNewGroup({
-            key: `${crypto.randomUUID()}`,
+            key: crypto.randomUUID(),
             name: values.groupName as string,
             createTime: now,
             updateTime: now,
@@ -174,11 +174,11 @@ const CreateNewModal: React.FC<IProps> = (props) => {
                                                 },
                                                 {
                                                     label: 'Md文档',
-                                                    value: FILE_TYPE.Markdown,
+                                                    value: FILE_TYPE.markdown,
                                                 },
                                                 {
                                                     label: 'HTML文档',
-                                                    value: FILE_TYPE.Html,
+                                                    value: FILE_TYPE.html,
                                                 },
                                             ]}
                                         />

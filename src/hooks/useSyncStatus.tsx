@@ -1,5 +1,6 @@
 /** Git 同步状态管理 Hook — 提供 status/message/lastSyncTime/pushNow，每5分钟自动同步 */
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { message } from 'antd';
 
 export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
 
@@ -49,17 +50,19 @@ export function useSyncStatus() {
   }, []);
 
   /** 立即执行一次 Git 推送同步 */
-  /** 立即执行一次 Git 推送同步 */
   const pushNow = useCallback(async () => {
     setSyncing();
     try {
       const result = await window.electronAPI?.pushToGitHubAsync();
       if (result?.success) {
+        message.success(result?.data || '同步成功');
         setSuccess(result?.data || '同步成功');
       } else {
+        message.error(result?.error || '同步失败');
         setError(result?.error || '同步失败');
       }
     } catch (err) {
+      message.error('同步出错');
       setError('同步出错');
     }
   }, [setSyncing, setSuccess, setError]);

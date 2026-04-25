@@ -101,6 +101,7 @@ const Home: React.FC = () => {
                 <Flex style={{ padding: '12px 12px 12px', borderBottom: '1px solid var(--border-color)' }} vertical>
                     <NoteSearch
                         searchType={searchType}
+                        value={searchTerm}
                         onSearchTypeChange={setSearchType}
                         onSearch={handleSearch}
                     />
@@ -166,7 +167,12 @@ const Home: React.FC = () => {
                         )}
                     </div>
                 ) : (
-                    <NoteGroups filteredGroups={filteredGroups} searchTerm={searchTerm} />
+                    <NoteGroups
+                        filteredGroups={filteredGroups}
+                        searchTerm={searchTerm}
+                        onSyncNow={sync.pushNow}
+                        syncStatus={sync.status}
+                    />
                 )}
 
                 <SyncStatusBar

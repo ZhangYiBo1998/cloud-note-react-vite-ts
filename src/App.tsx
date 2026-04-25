@@ -4,7 +4,7 @@
  * 职责：配置加载、主题切换、全局 Context 提供、Ant Design ConfigProvider 包裹。
  * 启动流程：getConfigJsonAsync → 初始化 settings/groupsMap → 渲染路由树。
  */
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState, useRef} from 'react';
 import {Outlet, useNavigate} from "react-router";
 import {ConfigProvider} from "antd";
 import SystemHeader from "./components/SystemHeader";
@@ -81,6 +81,9 @@ const App: React.FC = () => {
         }
     }, [settings.theme]);
 
+    // 标记初始化是否完成，防止 persistence useEffect 在 init 之前覆盖配置
+    const isInitialized = useRef(false);
+
     // 应用启动初始化：加载配置 → 提取 settings → 加载笔记分组
     useEffect(() => {
         const init = async () => {
@@ -112,14 +115,17 @@ const App: React.FC = () => {
             } catch (err) {
                 console.error('[App] init error:', err);
                 setConfig({});
+            } finally {
+                // init 完成后才允许 persistence effect 写入
+                isInitialized.current = true;
             }
         }
         init();
     }, []);
 
-    // 主题/关闭行为变更时自动持久化到 config.json
+    // 主题/关闭行为变更时自动持久化到 config.json（仅在 init 完成后生效）
     useEffect(() => {
-        (window as any).__closeType = settings.closeType;
+        if (!isInitialized.current) return;
         window.electronAPI?.updateConfigJsonAsync({
             theme: settings.theme,
             closeType: settings.closeType,

@@ -11,6 +11,7 @@ import {
     EditOutlined,
     SaveOutlined,
     CloudUploadOutlined,
+    CloseOutlined,
 } from '@ant-design/icons';
 import {
     SettingsContext,
@@ -57,7 +58,7 @@ const Setting: React.FC = () => {
 
     // 挂载时获取当前开机自启状态
     useEffect(() => {
-        window.electronAPI.getAutoLaunch().then((result) => {
+        window.electronAPI?.getAutoLaunch()?.then((result) => {
             if (result?.success) setAutoLaunchValue(result.data ?? false);
         })
     }, []);
@@ -214,6 +215,10 @@ const Setting: React.FC = () => {
                             <Space.Compact style={{ width: '100%' }}>
                                 <Input value={config.backupDirectory || ''} readOnly placeholder="选择备份存放目录" />
                                 <Button icon={<EllipsisOutlined />} onClick={selectBackupDirectory} />
+                                <Button icon={<CloseOutlined />} onClick={async () => {
+                                    await window.electronAPI?.updateConfigJsonAsync({ backupDirectory: '', backupIntervalMinutes: 0 });
+                                    await refreshConfig();
+                                }} disabled={!config.backupDirectory} />
                             </Space.Compact>
                         </Form.Item>
                         {/* 备份间隔 */}
@@ -221,7 +226,8 @@ const Setting: React.FC = () => {
                             <Flex align="center" gap={12}>
                                 <Select
                                     style={{ width: 160 }}
-                                    value={config.backupIntervalMinutes || 0}
+                                    value={config.backupDirectory ? (config.backupIntervalMinutes || 0) : 0}
+                                    disabled={!config.backupDirectory}
                                     onChange={async (value) => {
                                         await window.electronAPI?.updateConfigJsonAsync({ backupIntervalMinutes: value });
                                         await refreshConfig();
@@ -240,6 +246,7 @@ const Setting: React.FC = () => {
                                     icon={<CloudUploadOutlined />}
                                     onClick={backupNow}
                                     loading={backingUp}
+                                    disabled={!config.backupDirectory}
                                 >
                                     立即备份
                                 </Button>

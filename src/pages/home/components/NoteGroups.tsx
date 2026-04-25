@@ -8,19 +8,23 @@
  * - 首次挂载自动展开所有分组
  */
 import React, {memo, useState, useMemo, useEffect, useRef} from "react";
-import {Menu, Dropdown, Modal, Input, message} from "antd";
+import {Menu, Dropdown, Modal, Input, message, Flex, Tooltip} from "antd";
+import {CloudSyncOutlined, LoadingOutlined} from "@ant-design/icons";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
 import useNoteInfo from "../../hooks/useNoteInfo";
 import CreateNewModal from "./CreateNewModal";
 import type {IGroupsItem, IGroupsItemMap, INoteItem} from "../../../types";
+import type {SyncStatus} from "../../../hooks/useSyncStatus";
 
 interface NoteGroupsProps {
     filteredGroups?: IGroupsItem[];
     searchTerm?: string;
+    onSyncNow?: () => void;
+    syncStatus?: SyncStatus;
 }
 
-const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) => {
+const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm, onSyncNow, syncStatus }) => {
     const navigate = useNavigate();
     const {
         groups: allGroups,
@@ -133,8 +137,8 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
         };
         setGroupsConfig(_groupsConfig)
         const [updateResult, createResult] = await Promise.all([
-            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
-            window.electronAPI.createNoteAsync({
+            window.electronAPI?.updateGroupsConfigAsync(_groupsConfig),
+            window.electronAPI?.createNoteAsync({
                 paths: [data.name],
                 type: 'group',
             })
@@ -160,8 +164,8 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
         }
         setGroupsConfig(_groupsConfig)
         const [updateResult, createResult] = await Promise.all([
-            window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
-            window.electronAPI.createNoteAsync({
+            window.electronAPI?.updateGroupsConfigAsync(_groupsConfig),
+            window.electronAPI?.createNoteAsync({
                 paths: [targetGroup.name, `${data.name}`],
                 type: 'file',
                 content: '',
@@ -230,14 +234,29 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
 
     return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            {/* 新建笔记按钮 */}
+            {/* 工具栏：新建笔记 + 手动同步 */}
             <div style={{ padding: '0 12px 8px' }}>
-                <button
-                    className="new-note-btn"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    + 新建笔记
-                </button>
+                <Flex gap={6}>
+                    <button
+                        className="new-note-btn"
+                        style={{ flex: 1 }}
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        + 新建笔记
+                    </button>
+                    <Tooltip title="同步到云端">
+                        <button
+                            className="new-note-btn"
+                            style={{ width: 36, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={onSyncNow}
+                        >
+                            {syncStatus === 'syncing'
+                                ? <LoadingOutlined style={{ fontSize: 14 }} />
+                                : <CloudSyncOutlined style={{ fontSize: 14 }} />
+                            }
+                        </button>
+                    </Tooltip>
+                </Flex>
             </div>
             {/* 笔记树菜单 */}
             <div className="scrollable" style={{ flex: 1 }}>

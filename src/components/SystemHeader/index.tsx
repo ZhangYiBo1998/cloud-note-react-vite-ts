@@ -20,7 +20,7 @@ import {
 } from '@ant-design/icons';
 import {Flex} from "antd";
 import {useNavigate, useLocation} from "react-router";
-import {SidebarContext} from "../../utils/context";
+import {SidebarContext, SettingsContext} from "../../utils/context";
 
 const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const {children} = props;
@@ -28,6 +28,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const location = useLocation();
     const isSettings = location.pathname.startsWith('/setting');
     const { collapsed, toggleCollapse } = useContext(SidebarContext);
+    const { settings } = useContext(SettingsContext);
     const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false);
 
     useEffect(() => {
@@ -113,8 +114,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                         justify="center"
                         align="center"
                         onClick={() => {
-                            const closeType = (window as any).__closeType;
-                            if (closeType === 'quit') {
+                            if (settings.closeType === 'quit') {
                                 window.electronAPI?.closeWindow();
                             } else {
                                 window.electronAPI?.hideWindow();

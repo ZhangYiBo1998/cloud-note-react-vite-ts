@@ -49,15 +49,16 @@ const SyncStatusBar: React.FC<SyncStatusBarProps> = ({ status, message, onSyncNo
       }}
     >
       {icon()}
-      <span>{message}</span>
-      {status === 'error' && (
-        <span
-          style={{ cursor: 'pointer', textDecoration: 'underline', marginLeft: 8 }}
-          onClick={onSyncNow}
-        >
-          重试
-        </span>
-      )}
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {status === 'error' ? '同步失败' : message}
+      </span>
+      <span
+        style={{ cursor: 'pointer', opacity: 0.7, fontSize: 12, flexShrink: 0 }}
+        onClick={onSyncNow}
+        title="手动同步"
+      >
+        {status === 'syncing' ? '同步中...' : (status === 'error' ? '重试' : '同步')}
+      </span>
     </Flex>
   );
 };

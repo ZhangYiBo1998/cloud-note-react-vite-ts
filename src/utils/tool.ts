@@ -4,13 +4,12 @@ export function debounce<T extends (...args: any[]) => any>(
 ): (...args: Parameters<T>) => void {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    return function (...args: Parameters<T>) {
+    return function (this: unknown, ...args: Parameters<T>) {
         if (timeoutId) {
             clearTimeout(timeoutId);
         }
 
         timeoutId = setTimeout(() => {
-            // @ts-expect-error ignore-this-error
             func.apply(this, args);
         }, wait);
     };

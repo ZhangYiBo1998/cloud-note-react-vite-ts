@@ -97,13 +97,16 @@ export async function getGitRemoteUrlAsync(): Promise<string> {
 
 /**
  * 推送到 GitHub
- * 先拉取远程更新（git pull），再推送本地变更（git push）
+ * 先提交本地变更 → 拉取远程更新（rebase）→ 推送
  * 无变更时跳过推送
  */
 export async function pushToGitHubAsync(): Promise<GitResult> {
   try {
-    await executeGitCommand('git pull origin master');
-    console.log('拉取最新数据');
+    // 检查是否有远程仓库配置
+    const remoteUrl = await getGitRemoteUrlAsync();
+    if (!remoteUrl) {
+      return { success: false, error: '未配置 Git 远程仓库地址，请在设置中配置' };
+    }
 
     if (await checkGitStatusChange()) {
       console.log('开始推送更改到 GitHub...');
@@ -112,14 +115,17 @@ export async function pushToGitHubAsync(): Promise<GitResult> {
 
       await executeGitCommand(`git commit -m "Auto-save from cloudNote ${new Date().toLocaleString()}"`);
       console.log('更改已提交');
-
-      await executeGitCommand('git push origin master');
-      console.log('成功推送到 GitHub！');
-      return { success: true, output: '同步成功' };
     } else {
-      console.log('没有检测到更改，跳过推送。');
-      return { success: true, output: '没有变更，跳过同步' };
+      console.log('没有检测到更改，跳过本地提交。');
     }
+
+    // 先提交再 rebase pull（rebase 要求工作区干净）
+    await executeGitCommand('git pull --rebase origin master');
+    console.log('拉取最新数据');
+
+    await executeGitCommand('git push origin master');
+    console.log('成功推送到 GitHub！');
+    return { success: true, output: '同步成功' };
   } catch (error) {
     console.error('推送失败：', error);
     return { success: false, error: String(error) };

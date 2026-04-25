@@ -9,7 +9,7 @@
  * 标签通过 Ant Design Select mode="tags" 管理，变更实时持久化。
  * 笔记内容通过 3 秒防抖自动保存。
  */
-import React, {useEffect, useState, memo, useCallback} from "react";
+import React, {useEffect, useState, memo, useRef} from "react";
 import {
     Select,
     Input,
@@ -30,8 +30,12 @@ const NoteEdit: React.FC = () => {
         groups,
         setGroupsConfig,
     } = useNoteInfo()
-    /** 当前文件扩展名，决定渲染哪个编辑器组件 */
-    const [editorType, setEditorType] = useState(FILE_TYPE.text);
+    /** 当前笔记信息，从 groupsMap 中获取 */
+    const currentNote = params.id ? (groupsMap[params.id] as INoteItem | undefined) : undefined;
+    /** 从文件名推导编辑器类型（直接推导，无需 useEffect） */
+    const editorType = currentNote
+        ? (`.${currentNote.name?.split?.('.')?.[1] ?? ''}` as string)
+        : FILE_TYPE.text;
     /** 标签列表 */
     const [tagsValue, setTagsValue] = useState<string[]>([]);
     /** 笔记正文内容 */
@@ -49,8 +53,6 @@ const NoteEdit: React.FC = () => {
                 return;
             }
             const noteInfo = groupsMap[params.id as string] as INoteItem;
-            // 从文件名提取扩展名判断编辑器类型
-            setEditorType(`.${noteInfo.name?.split?.('.')?.[1]}`);
             setTagsValue(noteInfo.tags || [])
             setNoteValue(result.data || '')
         })
@@ -78,12 +80,14 @@ const NoteEdit: React.FC = () => {
     }, [tagsValue]);
 
     // 3 秒防抖自动保存，避免频繁写入磁盘
-    const writeNoteAsync = useCallback(debounce((value: string) => {
-        if (!params.id) {
-            return;
-        }
-        window.electronAPI?.writeNoteAsync(params.id, value)
-    }, 3000), [params.id])
+    const writeNoteAsyncRef = useRef<ReturnType<typeof debounce>>();
+
+    useEffect(() => {
+        writeNoteAsyncRef.current = debounce((value: string) => {
+            if (!params.id) return;
+            window.electronAPI?.writeNoteAsync(params.id, value);
+        }, 3000);
+    }, [params.id]);
 
     // 未选中笔记时显示占位提示
     if (!params.id) {
@@ -105,31 +109,31 @@ const NoteEdit: React.FC = () => {
                         value={noteValue}
                         onChange={(e) => {
                             setNoteValue(e.target.value)
-                            writeNoteAsync(e.target.value)
+                            writeNoteAsyncRef.current?.(e.target.value)
                         }}
                     />
                 )
             }
             {
-                editorType === FILE_TYPE.Markdown && (
+                editorType === FILE_TYPE.markdown && (
                     <ToastUIEditor
                         style={{ flex: 1, minHeight: 0 }}
                         value={noteValue}
                         onChange={(v: string) => {
                             setNoteValue(v)
-                            writeNoteAsync(v)
+                            writeNoteAsyncRef.current?.(v)
                         }}
                     />
                 )
             }
             {
-                editorType === FILE_TYPE.Html && (
+                editorType === FILE_TYPE.html && (
                     <HtmlEditor
                         style={{ flex: 1, minHeight: 0 }}
                         value={noteValue}
                         onChange={(v: string) => {
                             setNoteValue(v)
-                            writeNoteAsync(v)
+                            writeNoteAsyncRef.current?.(v)
                         }}
                     />
                 )

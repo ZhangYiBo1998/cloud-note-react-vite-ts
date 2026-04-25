@@ -7,7 +7,6 @@ import {
 } from '@ant-design/icons';
 import {
     SettingsContext,
-    ConfigContext,
 } from "../../utils/context";
 import useNoteInfo from "../hooks/useNoteInfo";
 
@@ -15,7 +14,6 @@ const {Title} = Typography;
 
 const Setting: React.FC = () => {
     const {settings, setSettings} = useContext(SettingsContext);
-    const { config, setConfig } = useContext(ConfigContext);
     const {
         saveDirectory,
     } = useNoteInfo();
@@ -24,9 +22,9 @@ const Setting: React.FC = () => {
     const [autoLaunchValue, setAutoLaunchValue] = useState(false);
     const [editDisable, setEditDisable] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [gitRemoteUrl, setGitRemoteUrl] = useState<string | null>(null);
+    const [gitRemoteUrl, setGitRemoteUrl] = useState('');
 
-    const gitUrl = gitRemoteUrl ?? config.gitUrl ?? '';
+    const gitUrl = gitRemoteUrl;
 
     useEffect(() => {
         window.electronAPI.getAutoLaunch().then(enabled => {
@@ -36,7 +34,7 @@ const Setting: React.FC = () => {
 
     useEffect(() => {
         window.electronAPI?.getGitRemoteUrlAsync().then((url) => {
-            if (url) setGitRemoteUrl(url);
+            setGitRemoteUrl(url || '');
         });
     }, []);
 
@@ -70,11 +68,7 @@ const Setting: React.FC = () => {
             onOk: async () => {
                 setSaving(true);
                 try {
-                    await window.electronAPI?.updateConfigJsonAsync({
-                        gitUrl: newGitUrl,
-                    });
                     await window.electronAPI?.initGitHubAsync(newGitUrl);
-                    setConfig(prev => ({ ...prev, gitUrl: newGitUrl }));
                     setGitRemoteUrl(newGitUrl);
                     message.success('Git 仓库地址已更新');
                     setEditDisable(true);

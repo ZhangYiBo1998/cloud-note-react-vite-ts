@@ -17,7 +17,6 @@ export interface IConfigContextValue {
 
 export interface IConfigData {
     saveDirectory?: string;
-    gitUrl?: string;
     closeType?: 'hide' | 'quit';
     theme?: 'light' | 'dark';
     backupDirectory?: string;

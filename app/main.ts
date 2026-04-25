@@ -131,11 +131,7 @@ app.on('window-all-closed', () => {
 app.on('will-quit', async () => {
   globalShortcut.unregisterAll();
   try {
-    const config = global.app_config || await getConfigJsonAsync();
-    const { gitUrl } = config || {};
-    if (gitUrl) {
-      await pushToGitHubAsync();
-    }
+    await pushToGitHubAsync();
   } catch (err) {
     console.error('退出时同步失败:', err);
   }

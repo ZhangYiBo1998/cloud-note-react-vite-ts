@@ -8,7 +8,6 @@ const useNoteInfo = () => {
 
     return {
         saveDirectory: config.saveDirectory || "",
-        gitUrl: config.gitUrl || "",
         groups: groupsConfig.groups || [],
         setGroupsConfig,
         groupsMap,

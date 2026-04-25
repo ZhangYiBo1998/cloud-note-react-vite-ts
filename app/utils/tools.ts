@@ -4,7 +4,6 @@ import path from 'path';
 
 export interface AppConfig {
   saveDirectory?: string;
-  gitUrl?: string;
   closeType?: 'hide' | 'quit';
   theme?: 'light' | 'dark';
   backupDirectory?: string;
@@ -122,7 +121,6 @@ export async function getConfigJsonAsync(force = false): Promise<AppConfig> {
   let configValue: string | null;
   const defaultConfig: AppConfig = {
     saveDirectory: path.join(getAppDocumentsDir(), 'save'),
-    gitUrl: '',
     closeType: 'hide',
     theme: 'light',
   };

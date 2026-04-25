@@ -22,6 +22,103 @@ import type {BackupState} from "../../types/global";
 
 const {Title} = Typography;
 
+/** 快捷键录制器 — 点击编辑按钮弹出浮窗，浮窗内录制快捷键，确认后保存 */
+const ShortcutRecorder: React.FC<{
+    value?: string;
+    onChange?: (value: string) => void;
+    placeholder?: string;
+}> = ({ value, onChange, placeholder }) => {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [recording, setRecording] = useState(false);
+    const [pendingValue, setPendingValue] = useState('');
+
+    const openModal = () => {
+        setPendingValue(value || '');
+        setRecording(false);
+        setModalOpen(true);
+    };
+
+    const handleConfirm = () => {
+        if (pendingValue) {
+            onChange?.(pendingValue);
+        }
+        setModalOpen(false);
+    };
+
+    const handleCancel = () => {
+        setModalOpen(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (!recording) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === 'Escape') {
+            setRecording(false);
+            return;
+        }
+
+        if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+
+        const parts: string[] = [];
+        if (e.ctrlKey || e.metaKey) parts.push('Ctrl');
+        if (e.altKey) parts.push('Alt');
+        if (e.shiftKey) parts.push('Shift');
+
+        const displayKey = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        parts.push(displayKey);
+
+        setPendingValue(parts.join('+'));
+        setRecording(false);
+    };
+
+    return (
+        <>
+            <Space.Compact>
+                <Input value={value} readOnly placeholder={placeholder} style={{ height: 32, fontFamily: 'monospace', width: 200 }} />
+                <Button icon={<EditOutlined />} onClick={openModal} />
+            </Space.Compact>
+            <Modal
+                title="设置快捷键"
+                open={modalOpen}
+                onOk={handleConfirm}
+                onCancel={handleCancel}
+                okText="确认"
+                cancelText="取消"
+                okButtonProps={{ disabled: !pendingValue }}
+                width={400}
+            >
+                <div
+                    style={{
+                        border: '2px dashed var(--border-color, #d9d9d9)',
+                        borderRadius: 8,
+                        padding: '40px 20px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        background: recording ? 'var(--btn-bg, #f5f5f7)' : undefined,
+                        outline: 'none',
+                    }}
+                    tabIndex={0}
+                    onClick={() => { setRecording(true); }}
+                    onKeyDown={handleKeyDown}
+                >
+                    {recording ? (
+                        <Typography.Text type="secondary">按下快捷键组合...</Typography.Text>
+                    ) : pendingValue ? (
+                        <Typography.Text code style={{ fontSize: 16 }}>{pendingValue}</Typography.Text>
+                    ) : (
+                        <Typography.Text type="secondary" style={{ cursor: 'pointer' }} onClick={() => setRecording(true)}>
+                            点击此处，然后按下快捷键组合
+                        </Typography.Text>
+                    )}
+                </div>
+            </Modal>
+        </>
+    );
+};
+
 const Setting: React.FC = () => {
     const {settings, setSettings} = useContext(SettingsContext);
     const {config, setConfig} = useContext(ConfigContext);
@@ -190,6 +287,44 @@ const Setting: React.FC = () => {
                         <Form.Item label="关闭应用时最小化到系统托盘" style={{ marginBottom: 16 }}>
                             <Switch value={settings.closeType === 'hide'}
                                     onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
+                        </Form.Item>
+                        {/* 全局快捷键（显示/隐藏应用） */}
+                        <Form.Item label="全局快捷键（显示/隐藏应用）" style={{ marginBottom: 16 }}>
+                            <Flex align="center" gap={8}>
+                                <ShortcutRecorder
+                                    value={config.globalShortcut || 'Alt+Space'}
+                                    onChange={async (value) => {
+                                        await window.electronAPI?.updateConfigJsonAsync({ globalShortcut: value });
+                                        await refreshConfig();
+                                    }}
+                                    placeholder="Alt+Space"
+                                />
+                                <Button size="small" onClick={async () => {
+                                    await window.electronAPI?.updateConfigJsonAsync({ globalShortcut: 'Alt+Space' });
+                                    await refreshConfig();
+                                }}>
+                                    恢复默认
+                                </Button>
+                            </Flex>
+                        </Form.Item>
+                        {/* 开发者工具快捷键 */}
+                        <Form.Item label="开发者工具快捷键（打开/关闭 Chrome DevTools）" style={{ marginBottom: 16 }}>
+                            <Flex align="center" gap={8}>
+                                <ShortcutRecorder
+                                    value={config.devToolsShortcut || 'Ctrl+Shift+I'}
+                                    onChange={async (value) => {
+                                        await window.electronAPI?.updateConfigJsonAsync({ devToolsShortcut: value });
+                                        await refreshConfig();
+                                    }}
+                                    placeholder="Ctrl+Shift+I"
+                                />
+                                <Button size="small" onClick={async () => {
+                                    await window.electronAPI?.updateConfigJsonAsync({ devToolsShortcut: 'Ctrl+Shift+I' });
+                                    await refreshConfig();
+                                }}>
+                                    恢复默认
+                                </Button>
+                            </Flex>
                         </Form.Item>
                         {/* 存档目录选择 */}
                         <Form.Item label="指定存档文件夹" style={{ marginBottom: 16 }}>

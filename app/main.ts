@@ -23,6 +23,7 @@ import {
   groupsToMapAsync,
 } from './utils/tools';
 import { pushToGitHubAsync } from './upload/github';
+import { setAppMainWindow, registerAppShortcut } from './app-shortcut';
 import { registerAllHandlers } from './ipc-handlers/index';
 import { startBackupScheduler, stopBackupScheduler } from './backup/backup';
 
@@ -68,16 +69,10 @@ function createWindow(): void {
 
   createSystemMenu();
 
-  // Alt+Space 切换窗口可见性
-  const DEFAULT_KEY_BINDING = 'Alt+Space';
-  globalShortcut.register(DEFAULT_KEY_BINDING, () => {
-    if (!mainWindow) return;
-    if (mainWindow.isVisible()) {
-      hideMainWindow(mainWindow);
-    } else {
-      showMainWindow(mainWindow);
-    }
-  });
+  // 从配置读取快捷键，注册全局显示/隐藏
+  setAppMainWindow(mainWindow);
+  const shortcut = global.app_config?.globalShortcut || 'Alt+Space';
+  registerAppShortcut(shortcut);
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');

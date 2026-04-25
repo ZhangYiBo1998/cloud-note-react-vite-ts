@@ -19,6 +19,8 @@ export interface AppConfig {
   theme?: 'light' | 'dark';
   backupDirectory?: string;
   backupIntervalMinutes?: number;
+  globalShortcut?: string;
+  devToolsShortcut?: string;
 }
 
 /** 单个笔记条目 */

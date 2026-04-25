@@ -52,6 +52,9 @@ export const IPC_CHANNELS = {
   // ---- 全文搜索 ----
   SEARCH_NOTES: 'search-notes-async',
 
+  // ---- 开发者工具 ----
+  TOGGLE_DEVTOOLS: 'toggle-devtools',
+
   // ---- 主进程 → 渲染进程导航指令（send/on 单向） ----
   NAVIGATE_TO: 'navigate-to',
 } as const;

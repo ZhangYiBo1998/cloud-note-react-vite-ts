@@ -42,4 +42,12 @@ export function registerWindowHandlers(): void {
       event.sender.send(IPC_CHANNELS.WINDOW_ALWAYS_ON_TOP_CHANGED, newState);
     }
   });
+
+  /** 切换 Chrome DevTools */
+  ipcMain.on(IPC_CHANNELS.TOGGLE_DEVTOOLS, (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+      win.webContents.toggleDevTools();
+    }
+  });
 }

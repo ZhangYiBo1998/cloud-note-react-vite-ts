@@ -108,6 +108,9 @@ export interface IElectronAPI {
   /** 获取备份状态 */
   getBackupStatusAsync(): Promise<IpcResult<BackupState>>;
 
+  /** 切换 Chrome DevTools */
+  toggleDevTools(): void;
+
   /** 监听主进程导航指令（托盘菜单"设置"触发） */
   onNavigateTo(callback: (path: string) => void): void;
 }

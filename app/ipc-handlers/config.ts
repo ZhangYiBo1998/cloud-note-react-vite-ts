@@ -17,6 +17,7 @@ import {
   getGroupsConfigAsync,
 } from '../utils/tools';
 import { restartSchedulerFromConfig } from '../backup/backup';
+import { registerAppShortcut } from '../app-shortcut';
 
 export function registerConfigHandlers(): void {
   /** 设置/取消开机自启（fire-and-forget，无返回值） */
@@ -80,6 +81,11 @@ export function registerConfigHandlers(): void {
       // 备份配置变更时重启调度器
       if (newConfig.backupDirectory !== undefined || newConfig.backupIntervalMinutes !== undefined) {
         await restartSchedulerFromConfig();
+      }
+
+      // 全局快捷键变更时重新注册
+      if (newConfig.globalShortcut !== undefined) {
+        registerAppShortcut(newConfig.globalShortcut as string);
       }
 
       return successResult(undefined);

@@ -38,6 +38,7 @@ const CHANNELS = {
   SEARCH_NOTES: 'search-notes-async',
   PERFORM_BACKUP: 'perform-backup',
   GET_BACKUP_STATUS: 'get-backup-status',
+  TOGGLE_DEVTOOLS: 'toggle-devtools',
   NAVIGATE_TO: 'navigate-to',
 };
 
@@ -106,6 +107,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ---- 自动备份 ----
   performBackupAsync: () => safeInvoke(CHANNELS.PERFORM_BACKUP),
   getBackupStatusAsync: () => safeInvoke(CHANNELS.GET_BACKUP_STATUS),
+
+  // ---- 开发者工具 ----
+  toggleDevTools: () => ipcRenderer.send(CHANNELS.TOGGLE_DEVTOOLS),
 
   // ---- 主进程导航指令 ----
   onNavigateTo: (callback: (path: string) => void) => {

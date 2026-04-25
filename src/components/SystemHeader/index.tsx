@@ -17,10 +17,12 @@ import {
     MenuUnfoldOutlined,
     PushpinOutlined,
     PushpinFilled,
+    CodeOutlined,
 } from '@ant-design/icons';
 import {Flex} from "antd";
 import {useNavigate, useLocation} from "react-router";
-import {SidebarContext, SettingsContext} from "../../utils/context";
+import {SidebarContext, SettingsContext, ConfigContext} from "../../utils/context";
+import {useShortcut} from "../../hooks/useShortcut";
 
 const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const {children} = props;
@@ -29,7 +31,13 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const isSettings = location.pathname.startsWith('/setting');
     const { collapsed, toggleCollapse } = useContext(SidebarContext);
     const { settings } = useContext(SettingsContext);
+    const { config } = useContext(ConfigContext);
     const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false);
+
+    // 注册开发者工具快捷键（默认 Ctrl+Shift+I）
+    useShortcut(config.devToolsShortcut || 'Ctrl+Shift+I', () => {
+        window.electronAPI?.toggleDevTools();
+    });
 
     useEffect(() => {
         window.electronAPI?.onAlwaysOnTopChanged((isOnTop: boolean) => {
@@ -86,6 +94,16 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                 </Flex>
                 {/* 右侧窗口控制区域 */}
                 <Flex align="center" gap={2}>
+                    {/* Chrome DevTools */}
+                    <Flex
+                        className="no-drag-area system-icon"
+                        justify="center"
+                        align="center"
+                        onClick={() => window.electronAPI?.toggleDevTools()}
+                        title="开发者工具"
+                    >
+                        <CodeOutlined style={{ fontSize: 13 }} />
+                    </Flex>
                     {/* 磁铁按钮：窗口始终置顶 */}
                     <Flex
                         className={`no-drag-area system-icon${isAlwaysOnTop ? ' system-icon-magnet-active' : ''}`}

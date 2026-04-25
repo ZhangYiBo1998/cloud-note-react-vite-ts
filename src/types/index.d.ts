@@ -25,6 +25,8 @@ export interface IConfigData {
     theme?: 'light' | 'dark';
     backupDirectory?: string;
     backupIntervalMinutes?: number;
+    globalShortcut?: string;
+    devToolsShortcut?: string;
 }
 
 /** 分组/笔记通用字段 */

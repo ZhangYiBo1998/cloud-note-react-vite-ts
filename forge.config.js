@@ -4,7 +4,10 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: './src/assets/icon',
+    name: 'CloudNote',            // 应用名称
+    executableName: 'CloudNote',  // 可执行文件名
+    icon: './icon.ico',           // 图标路径
+    overwrite: true,
   },
   makers: [
     {

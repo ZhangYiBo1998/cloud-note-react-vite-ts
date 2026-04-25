@@ -18,7 +18,7 @@
     "preview": "vite preview",
     "electron:start": "cross-env IS_DEV=false electron-forge start",
     "electron:dev": "cross-env IS_DEV=true electron-forge start",
-    "package": "npm run build:main && electron-forge package",
+    "package": "npm run build && electron-forge package",
     "make": "npm run build:main && npm run build:renderer && electron-forge make",
     "app": "npm run build && npm run package"
   },

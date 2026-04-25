@@ -37,14 +37,14 @@ const isDev = process.env.IS_DEV === 'true';
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 
-/** 解析资源路径：开发模式指向 src/，打包模式指向 resources/ */
+/**
+ * 解析资源路径
+ * 统一使用 __dirname 回退到项目根目录，在 dev 和 ASAR 打包模式下均可正确解析。
+ * dev:  __dirname = dist/main/ → ../../ = 项目根
+ * 打包:  __dirname = app.asar/dist/main/ → ../../ = app.asar/（ASAR 根即为项目根）
+ */
 function resolveAsset(relativePath: string): string {
-  if (isDev) {
-    // 开发模式：__dirname = dist/main/，回退到项目根目录
-    return path.join(__dirname, '..', '..', relativePath);
-  }
-  // 打包模式：资源在 resources/ 目录下
-  return path.join(process.resourcesPath, relativePath);
+  return path.join(__dirname, '..', '..', relativePath);
 }
 
 /**
@@ -56,7 +56,7 @@ function resolveAsset(relativePath: string): string {
  */
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1000,
     height: 600,
     frame: false,
     webPreferences: {

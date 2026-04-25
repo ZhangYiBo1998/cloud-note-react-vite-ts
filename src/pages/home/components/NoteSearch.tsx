@@ -21,7 +21,7 @@ const NoteSearch: React.FC<NoteSearchProps> = ({ searchType, onSearch, onSearchT
             <Select
                 value={searchType}
                 onChange={(value) => onSearchTypeChange(value)}
-                style={{ width: 80 }}
+                style={{ width: 100 }}
                 options={[
                     { label: '文件名', value: 'fileName' },
                     { label: '标签', value: 'tags' },

@@ -12,7 +12,6 @@ import {
   Tray,
   Menu,
   MenuItem,
-  nativeTheme,
   nativeImage,
 } from 'electron';
 import {
@@ -95,12 +94,9 @@ function createWindow(): void {
  * - 双击托盘图标切换窗口可见性
  */
 function createSystemMenu(): void {
-  const iconPath = resolveAsset('src/assets/logo.png');
-  const iconWhitePath = resolveAsset('src/assets/logo-white.png');
+  const iconPath = resolveAsset('src/assets/icon.png');
 
-  const trayIcon = nativeImage.createFromPath(
-    nativeTheme.shouldUseDarkColors ? iconWhitePath : iconPath
-  ).resize({ width: 16, height: 16 });
+  const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
 
   tray = new Tray(trayIcon);
   tray.setToolTip('Cloud Note');

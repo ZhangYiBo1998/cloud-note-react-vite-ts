@@ -32,4 +32,14 @@ export function registerWindowHandlers(): void {
       win.close();
     }
   });
+
+  /** 切换窗口置顶状态 */
+  ipcMain.on(IPC_CHANNELS.WINDOW_TOGGLE_ALWAYS_ON_TOP, (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+      const newState = !win.isAlwaysOnTop();
+      win.setAlwaysOnTop(newState);
+      event.sender.send(IPC_CHANNELS.WINDOW_ALWAYS_ON_TOP_CHANGED, newState);
+    }
+  });
 }

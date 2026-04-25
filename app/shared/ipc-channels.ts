@@ -14,6 +14,8 @@ export const IPC_CHANNELS = {
   WINDOW_HIDE: 'window-hide',
   WINDOW_MINIMIZE: 'window-minimize',
   WINDOW_CLOSE: 'window-close',
+  WINDOW_TOGGLE_ALWAYS_ON_TOP: 'window-toggle-always-on-top',
+  WINDOW_ALWAYS_ON_TOP_CHANGED: 'window-always-on-top-changed',
 
   // ---- 开机自启 ----
   SET_AUTO_LAUNCH: 'set-auto-launch',
@@ -47,8 +49,11 @@ export const IPC_CHANNELS = {
   PERFORM_BACKUP: 'perform-backup',
   GET_BACKUP_STATUS: 'get-backup-status',
 
-  // ---- 全文搜索（待实现） ----
+  // ---- 全文搜索 ----
   SEARCH_NOTES: 'search-notes-async',
+
+  // ---- 主进程 → 渲染进程导航指令（send/on 单向） ----
+  NAVIGATE_TO: 'navigate-to',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

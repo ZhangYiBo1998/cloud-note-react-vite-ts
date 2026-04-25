@@ -95,63 +95,53 @@ const NoteEdit: React.FC = () => {
     }
 
     return (
-        <div className="scrollable" key={params.id}>
-            <Flex vertical gap={10} style={{padding: 10}}>
-                {/* 标签输入（支持自由输入 + 多选） */}
-                <Select
-                    mode="tags"
-                    style={{width: '100%'}}
-                    placeholder="Tags Mode"
-                    value={tagsValue}
-                    onChange={setTagsValue}
-                />
-                {/* 纯文本编辑器 */}
-                {
-                    editorType === FILE_TYPE.text && (
-                        <Input.TextArea
-                            style={{
-                                height: 'calc(100vh - 160px)'
-                            }}
-                            placeholder="内容"
-                            value={noteValue}
-                            onChange={(e) => {
-                                setNoteValue(e.target.value)
-                                writeNoteAsync(e.target.value)
-                            }}
-                        />
-                    )
-                }
-                {/* Markdown 编辑器 */}
-                {
-                    editorType === FILE_TYPE.Markdown && (
-                        <ToastUIEditor
-                            style={{
-                                height: 'calc(100vh - 160px)'
-                            }}
-                            value={noteValue}
-                            onChange={(v: string) => {
-                                setNoteValue(v)
-                                writeNoteAsync(v)
-                            }}
-                        />
-                    )
-                }
-                {/* 富文本 HTML 编辑器 */}
-                {
-                    editorType === FILE_TYPE.Html && (
-                        <HtmlEditor
-                            style={{
-                                height: 'calc(100vh - 160px)'
-                            }}
-                            value={noteValue}
-                            onChange={(v: string) => {
-                                setNoteValue(v)
-                                writeNoteAsync(v)
-                            }}
-                        />
-                    )
-                }
-            </Flex>
+        <div className="scrollable" key={params.id} style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 10 }}>
+            {/* 编辑器区域：flex: 1 填充剩余高度 */}
+            {
+                editorType === FILE_TYPE.text && (
+                    <Input.TextArea
+                        style={{ flex: 1, minHeight: 0 }}
+                        placeholder="内容"
+                        value={noteValue}
+                        onChange={(e) => {
+                            setNoteValue(e.target.value)
+                            writeNoteAsync(e.target.value)
+                        }}
+                    />
+                )
+            }
+            {
+                editorType === FILE_TYPE.Markdown && (
+                    <ToastUIEditor
+                        style={{ flex: 1, minHeight: 0 }}
+                        value={noteValue}
+                        onChange={(v: string) => {
+                            setNoteValue(v)
+                            writeNoteAsync(v)
+                        }}
+                    />
+                )
+            }
+            {
+                editorType === FILE_TYPE.Html && (
+                    <HtmlEditor
+                        style={{ flex: 1, minHeight: 0 }}
+                        value={noteValue}
+                        onChange={(v: string) => {
+                            setNoteValue(v)
+                            writeNoteAsync(v)
+                        }}
+                    />
+                )
+            }
+            {/* 标签输入（支持自由输入 + 多选），紧跟编辑器下方 */}
+            <Select
+                mode="tags"
+                style={{ width: '100%', marginTop: 10, flexShrink: 0 }}
+                placeholder="Tags Mode"
+                value={tagsValue}
+                onChange={setTagsValue}
+            />
         </div>
     );
 };

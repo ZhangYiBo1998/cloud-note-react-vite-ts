@@ -23,10 +23,16 @@ const {Title} = Typography;
 
 const Setting: React.FC = () => {
     const {settings, setSettings} = useContext(SettingsContext);
-    const {config} = useContext(ConfigContext);
+    const {config, setConfig} = useContext(ConfigContext);
     const {
         saveDirectory,
     } = useNoteInfo();
+
+    /** 重新从主进程加载配置，同步 React state 与磁盘 */
+    const refreshConfig = async () => {
+        const result = await window.electronAPI?.getConfigJsonAsync();
+        if (result?.success && result.data) setConfig(result.data);
+    };
 
     const [form] = Form.useForm()
     /** 开机自启状态 */
@@ -84,9 +90,8 @@ const Setting: React.FC = () => {
     const selectSaveDirectory = async () => {
         const result = await window.electronAPI?.selectSaveDirectory(saveDirectory);
         if (result?.success && result.data) {
-            window.electronAPI?.updateConfigJsonAsync({
-                saveDirectory: result.data
-            });
+            await window.electronAPI?.updateConfigJsonAsync({ saveDirectory: result.data });
+            await refreshConfig();
         }
     }
 
@@ -129,13 +134,12 @@ const Setting: React.FC = () => {
         })
     }
 
-    /** 打开备份目录选择器 */
+    /** 打开备份目录选择器，保存后刷新 React 配置状态 */
     const selectBackupDirectory = async () => {
         const result = await window.electronAPI?.selectSaveDirectory(config.backupDirectory);
         if (result?.success && result.data) {
-            window.electronAPI?.updateConfigJsonAsync({
-                backupDirectory: result.data
-            });
+            await window.electronAPI?.updateConfigJsonAsync({ backupDirectory: result.data });
+            await refreshConfig();
         }
     }
 
@@ -194,17 +198,19 @@ const Setting: React.FC = () => {
                             </Space.Compact>
                         </Form.Item>
                         {/* Git 仓库地址 */}
-                        <Form.Item label="Git 仓库地址" name="gitUrl" style={{ marginBottom: 16 }}>
+                        <Form.Item label="Git 仓库地址" style={{ marginBottom: 16 }}>
                             <Space.Compact style={{ width: '100%' }}>
-                                <Input disabled={editDisable} placeholder="请输入 Git 仓库地址" />
+                                <Form.Item name="gitUrl" noStyle>
+                                    <Input disabled={editDisable} placeholder="请输入 Git 仓库地址" />
+                                </Form.Item>
                                 {editDisable
                                     ? <Button icon={<EditOutlined />} onClick={() => setEditDisable(false)} />
                                     : <Button icon={<SaveOutlined />} onClick={saveGitUrl} loading={saving} />
                                 }
                             </Space.Compact>
                         </Form.Item>
-                        {/* 备份目录 */}
-                        <Form.Item label="备份目录" style={{ marginBottom: 16 }}>
+                        {/* 本地备份目录 */}
+                        <Form.Item label="本地备份目录" style={{ marginBottom: 16 }}>
                             <Space.Compact style={{ width: '100%' }}>
                                 <Input value={config.backupDirectory || ''} readOnly placeholder="选择备份存放目录" />
                                 <Button icon={<EllipsisOutlined />} onClick={selectBackupDirectory} />
@@ -216,10 +222,9 @@ const Setting: React.FC = () => {
                                 <Select
                                     style={{ width: 160 }}
                                     value={config.backupIntervalMinutes || 0}
-                                    onChange={(value) => {
-                                        window.electronAPI?.updateConfigJsonAsync({
-                                            backupIntervalMinutes: value
-                                        });
+                                    onChange={async (value) => {
+                                        await window.electronAPI?.updateConfigJsonAsync({ backupIntervalMinutes: value });
+                                        await refreshConfig();
                                     }}
                                     options={[
                                         { label: '禁用', value: 0 },

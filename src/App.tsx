@@ -5,7 +5,7 @@
  * 启动流程：getConfigJsonAsync → 初始化 settings/groupsMap → 渲染路由树。
  */
 import React, {useEffect, useMemo, useState} from 'react';
-import {Outlet} from "react-router";
+import {Outlet, useNavigate} from "react-router";
 import {ConfigProvider} from "antd";
 import SystemHeader from "./components/SystemHeader";
 import {
@@ -37,6 +37,14 @@ const App: React.FC = () => {
 
     /** 侧边栏可拖拽/折叠状态 */
     const sidebar = useResizablePanel();
+    const navigate = useNavigate();
+
+    // 监听托盘菜单"设置"导航指令
+    useEffect(() => {
+        window.electronAPI?.onNavigateTo((path: string) => {
+            navigate(path);
+        });
+    }, [navigate]);
 
     // 根据主题切换选择对应的 Ant Design token 配置
     const theme = useMemo(() => settings.theme === 'dark' ? darkTheme : lightTheme, [settings.theme]);
@@ -60,7 +68,7 @@ const App: React.FC = () => {
         } else {
             root.style.setProperty('--header-bg', '#f5f5f7');
             root.style.setProperty('--sidebar-bg', '#fafafa');
-            root.style.setProperty('--content-bg', '#ffffff');
+            root.style.setProperty('--content-bg', '#f5f5f7');
             root.style.setProperty('--text-primary', '#1d1d1f');
             root.style.setProperty('--text-secondary', '#6e6e73');
             root.style.setProperty('--border-color', '#e8e8ed');

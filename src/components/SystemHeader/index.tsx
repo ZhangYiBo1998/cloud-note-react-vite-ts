@@ -6,7 +6,7 @@
  * - 右侧：最小化 → 隐藏到托盘、关闭按钮（根据 closeType 决定隐藏还是退出）
  * - 顶部区域可拖拽移动窗口（drag-area）
  */
-import React, {memo, useContext} from "react";
+import React, {memo, useContext, useEffect, useState} from "react";
 import type {PropsWithChildren} from "react";
 import {
     MinusOutlined,
@@ -15,6 +15,8 @@ import {
     HomeOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
+    PushpinOutlined,
+    PushpinFilled,
 } from '@ant-design/icons';
 import {Flex} from "antd";
 import {useNavigate, useLocation} from "react-router";
@@ -26,6 +28,13 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const location = useLocation();
     const isSettings = location.pathname.startsWith('/setting');
     const { collapsed, toggleCollapse } = useContext(SidebarContext);
+    const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false);
+
+    useEffect(() => {
+        window.electronAPI?.onAlwaysOnTopChanged((isOnTop: boolean) => {
+            setIsAlwaysOnTop(isOnTop);
+        });
+    }, []);
 
     return (
         <Flex vertical style={{ height: '100vh' }}>
@@ -75,7 +84,20 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                     Cloud Note
                 </Flex>
                 {/* 右侧窗口控制区域 */}
-                <Flex>
+                <Flex align="center" gap={2}>
+                    {/* 磁铁按钮：窗口始终置顶 */}
+                    <Flex
+                        className={`no-drag-area system-icon${isAlwaysOnTop ? ' system-icon-magnet-active' : ''}`}
+                        justify="center"
+                        align="center"
+                        onClick={() => window.electronAPI?.toggleAlwaysOnTop()}
+                        title={isAlwaysOnTop ? '取消置顶' : '窗口置顶'}
+                    >
+                        {isAlwaysOnTop
+                            ? <PushpinFilled style={{ fontSize: 13 }} />
+                            : <PushpinOutlined style={{ fontSize: 13 }} />
+                        }
+                    </Flex>
                     {/* 最小化 → 隐藏到系统托盘 */}
                     <Flex
                         className="no-drag-area system-icon system-icon-minimize"

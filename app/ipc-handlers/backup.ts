@@ -16,8 +16,9 @@ export function registerBackupHandlers(): void {
       await performBackupAsync();
       return successResult(undefined);
     } catch (err) {
-      console.error('备份失败:', err);
-      return errorResult('备份失败');
+      const message = err instanceof Error ? err.message : '备份失败';
+      console.error('备份失败:', message);
+      return errorResult(message);
     }
   });
 

@@ -15,6 +15,8 @@ const CHANNELS = {
   WINDOW_HIDE: 'window-hide',
   WINDOW_MINIMIZE: 'window-minimize',
   WINDOW_CLOSE: 'window-close',
+  WINDOW_TOGGLE_ALWAYS_ON_TOP: 'window-toggle-always-on-top',
+  WINDOW_ALWAYS_ON_TOP_CHANGED: 'window-always-on-top-changed',
   SET_AUTO_LAUNCH: 'set-auto-launch',
   GET_AUTO_LAUNCH: 'get-auto-launch',
   GET_CONFIG: 'get-config-json-async',
@@ -36,6 +38,7 @@ const CHANNELS = {
   SEARCH_NOTES: 'search-notes-async',
   PERFORM_BACKUP: 'perform-backup',
   GET_BACKUP_STATUS: 'get-backup-status',
+  NAVIGATE_TO: 'navigate-to',
 };
 
 /**
@@ -55,6 +58,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.send(CHANNELS.WINDOW_MINIMIZE),
   closeWindow: () => ipcRenderer.send(CHANNELS.WINDOW_CLOSE),
   hideWindow: () => ipcRenderer.send(CHANNELS.WINDOW_HIDE),
+  toggleAlwaysOnTop: () => ipcRenderer.send(CHANNELS.WINDOW_TOGGLE_ALWAYS_ON_TOP),
+  onAlwaysOnTopChanged: (callback: (isOnTop: boolean) => void) => {
+    ipcRenderer.on(CHANNELS.WINDOW_ALWAYS_ON_TOP_CHANGED, (_event, isOnTop) => {
+      callback(isOnTop as boolean);
+    });
+  },
 
   // ---- 开机自启 ----
   setAutoLaunch: (checked: boolean) => safeInvoke(CHANNELS.SET_AUTO_LAUNCH, checked),
@@ -97,4 +106,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ---- 自动备份 ----
   performBackupAsync: () => safeInvoke(CHANNELS.PERFORM_BACKUP),
   getBackupStatusAsync: () => safeInvoke(CHANNELS.GET_BACKUP_STATUS),
+
+  // ---- 主进程导航指令 ----
+  onNavigateTo: (callback: (path: string) => void) => {
+    ipcRenderer.on(CHANNELS.NAVIGATE_TO, (_event, path) => {
+      callback(path as string);
+    });
+  },
 });

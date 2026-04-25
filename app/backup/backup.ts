@@ -38,13 +38,18 @@ async function copyDirectory(src: string, dest: string): Promise<void> {
 /**
  * 执行一次完整备份
  * 将 saveDirectory 复制到 <backupDirectory>/backup-<YYYYMMDD-HHmmss>/
+ * 无备份目录或正在进行中时抛出错误，由调用方处理
  */
 export async function performBackupAsync(): Promise<void> {
-  if (backupState.backupInProgress) return;
+  if (backupState.backupInProgress) {
+    throw new Error('备份正在进行中，请稍后再试');
+  }
 
   const config = await getConfigJsonAsync();
   const backupDir = config.backupDirectory;
-  if (!backupDir) return;
+  if (!backupDir) {
+    throw new Error('未配置备份目录，请先在设置中指定备份存放位置');
+  }
 
   backupState.backupInProgress = true;
   try {
@@ -62,6 +67,7 @@ export async function performBackupAsync(): Promise<void> {
     await cleanupOldBackups(backupDir, 10);
   } catch (err) {
     console.error('备份失败:', err);
+    throw err;
   } finally {
     backupState.backupInProgress = false;
   }

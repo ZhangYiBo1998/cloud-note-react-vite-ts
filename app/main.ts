@@ -37,6 +37,16 @@ const isDev = process.env.IS_DEV === 'true';
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 
+/** 解析资源路径：开发模式指向 src/，打包模式指向 resources/ */
+function resolveAsset(relativePath: string): string {
+  if (isDev) {
+    // 开发模式：__dirname = dist/main/，回退到项目根目录
+    return path.join(__dirname, '..', '..', relativePath);
+  }
+  // 打包模式：资源在 resources/ 目录下
+  return path.join(process.resourcesPath, relativePath);
+}
+
 /**
  * 创建主窗口
  * - 无框窗口（自定义标题栏）
@@ -86,18 +96,20 @@ function createWindow(): void {
 /**
  * 创建系统托盘和右键菜单
  * - 托盘图标根据系统主题自动切换亮/暗色版本
- * - 菜单项：显示、设置、退出
+ * - 菜单项：显示、设置、退出（全部功能完整）
  * - 双击托盘图标切换窗口可见性
  */
 function createSystemMenu(): void {
-  const iconPath = path.join(__dirname, '../src/assets/logo.png');
-  const iconWhitePath = path.join(__dirname, '../src/assets/logo-white.png');
+  const iconPath = resolveAsset('src/assets/logo.png');
+  const iconWhitePath = resolveAsset('src/assets/logo-white.png');
 
-  const icon = nativeImage.createFromPath(
-    nativeTheme.shouldUseDarkColors ? iconPath : iconWhitePath
-  );
+  const trayIcon = nativeImage.createFromPath(
+    nativeTheme.shouldUseDarkColors ? iconWhitePath : iconPath
+  ).resize({ width: 16, height: 16 });
 
-  tray = new Tray(icon);
+  tray = new Tray(trayIcon);
+  tray.setToolTip('Cloud Note');
+
   const menu = new Menu();
 
   menu.append(new MenuItem({
@@ -106,10 +118,20 @@ function createSystemMenu(): void {
       if (mainWindow) showMainWindow(mainWindow);
     },
   }));
-  menu.append(new MenuItem({ label: '设置' }));
+
+  menu.append(new MenuItem({
+    label: '设置',
+    click: () => {
+      if (mainWindow) {
+        showMainWindow(mainWindow);
+        // 通知渲染进程导航到设置页
+        mainWindow.webContents.send('navigate-to', '/setting');
+      }
+    },
+  }));
+
   menu.append(new MenuItem({ label: '退出', role: 'quit' }));
 
-  Menu.setApplicationMenu(menu);
   tray.setContextMenu(menu);
 
   tray.on('double-click', () => {
@@ -137,6 +159,19 @@ async function initAsync(): Promise<void> {
   if (config.backupIntervalMinutes && config.backupIntervalMinutes > 0 && config.backupDirectory) {
     startBackupScheduler(config.backupIntervalMinutes);
   }
+}
+
+// ---- 单实例锁：重复打开应用时聚焦已有窗口 ----
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      showMainWindow(mainWindow);
+    }
+  });
 }
 
 // ---- 应用生命周期 ----

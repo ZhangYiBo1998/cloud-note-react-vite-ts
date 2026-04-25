@@ -98,7 +98,7 @@ const Home: React.FC = () => {
                     transition: isResizing ? 'none' : 'width 0.2s ease',
                 }}
             >
-                <Flex style={{ padding: '12px 12px 4px' }} vertical gap={8}>
+                <Flex style={{ padding: '12px 12px 12px', borderBottom: '1px solid var(--border-color)' }} vertical>
                     <NoteSearch
                         searchType={searchType}
                         onSearchTypeChange={setSearchType}

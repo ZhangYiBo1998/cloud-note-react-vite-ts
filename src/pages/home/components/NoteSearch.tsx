@@ -19,7 +19,6 @@ const NoteSearch: React.FC<NoteSearchProps> = ({ searchType, onSearch, onSearchT
         <Space.Compact style={{ width: '100%' }}>
             {/* 搜索类型下拉 */}
             <Select
-                size="small"
                 value={searchType}
                 onChange={(value) => onSearchTypeChange(value)}
                 style={{ width: 80 }}
@@ -31,7 +30,6 @@ const NoteSearch: React.FC<NoteSearchProps> = ({ searchType, onSearch, onSearchT
             />
             {/* 搜索输入框 */}
             <Input
-                size="small"
                 placeholder={searchType === 'tags' ? '搜索标签...' : searchType === 'content' ? '搜索内容...' : '搜索文件名...'}
                 prefix={<SearchOutlined style={{ color: 'var(--text-secondary)' }} />}
                 onChange={(e) => onSearch(e.target.value, searchType)}

@@ -39,6 +39,12 @@ export interface IElectronAPI {
   /** 隐藏窗口（托盘模式） */
   hideWindow(): void;
 
+  /** 切换窗口始终置顶 */
+  toggleAlwaysOnTop(): void;
+
+  /** 监听窗口置顶状态变化 */
+  onAlwaysOnTopChanged(callback: (isOnTop: boolean) => void): void;
+
   /** 设置应用开机自启状态 */
   setAutoLaunch(bool: boolean): void;
 
@@ -101,6 +107,9 @@ export interface IElectronAPI {
 
   /** 获取备份状态 */
   getBackupStatusAsync(): Promise<IpcResult<BackupState>>;
+
+  /** 监听主进程导航指令（托盘菜单"设置"触发） */
+  onNavigateTo(callback: (path: string) => void): void;
 }
 
 /** 备份状态 */

@@ -1,7 +1,7 @@
 :root {
   --header-bg: #f5f5f7;
   --sidebar-bg: #fafafa;
-  --content-bg: #ffffff;
+  --content-bg: #f5f5f7;
   --text-primary: #1d1d1f;
   --text-secondary: #6e6e73;
   --border-color: #e8e8ed;
@@ -81,6 +81,10 @@ body {
 .system-icon-close:hover {
   background: #e81123 !important;
   color: #fff !important;
+}
+
+.system-icon-magnet-active {
+  color: #0071e3;
 }
 
 /* New note button */

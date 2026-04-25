@@ -5,7 +5,9 @@ module.exports = {
   packagerConfig: {
     asar: true,
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    ignoreModules: ['@parcel/watcher'],
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',

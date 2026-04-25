@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Outlet} from "react-router";
-import '@ant-design/v5-patch-for-react-19';
 import SystemHeader from "./components/SystemHeader";
 import {
     SettingsContext,
@@ -72,13 +71,13 @@ const App: React.FC = () => {
     }, [groupsConfig]);
 
     return (
-        <ConfigContext value={config}>
-            <GroupsContext value={{
+        <ConfigContext.Provider value={config}>
+            <GroupsContext.Provider value={{
                 groupsMap,
                 groupsConfig,
                 setGroupsConfig,
             }}>
-                <SettingsContext
+                <SettingsContext.Provider
                     value={{
                         settings,
                         setSettings,
@@ -87,9 +86,9 @@ const App: React.FC = () => {
                     <SystemHeader>
                         <Outlet/>
                     </SystemHeader>
-                </SettingsContext>
-            </GroupsContext>
-        </ConfigContext>
+                </SettingsContext.Provider>
+            </GroupsContext.Provider>
+        </ConfigContext.Provider>
     )
 }
 export default App

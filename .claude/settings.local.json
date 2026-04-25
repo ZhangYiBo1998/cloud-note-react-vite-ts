@@ -6,7 +6,8 @@
       "Bash(npm config *)",
       "Bash(rm -rf node_modules)",
       "Bash(rm -f yarn.lock)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(node -e ' *)"
     ]
   }
 }

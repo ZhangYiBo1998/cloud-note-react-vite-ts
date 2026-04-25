@@ -194,7 +194,7 @@ const Setting: React.FC = () => {
                         {/* 存档目录选择 */}
                         <Form.Item label="指定存档文件夹" style={{ marginBottom: 16 }}>
                             <Space.Compact style={{ width: '100%' }}>
-                                <Input value={saveDirectory} readOnly />
+                                <Input value={saveDirectory} readOnly style={{ height: 32 }} />
                                 <Button icon={<EllipsisOutlined />} onClick={selectSaveDirectory} />
                             </Space.Compact>
                         </Form.Item>
@@ -202,7 +202,7 @@ const Setting: React.FC = () => {
                         <Form.Item label="Git 仓库地址" style={{ marginBottom: 16 }}>
                             <Space.Compact style={{ width: '100%' }}>
                                 <Form.Item name="gitUrl" noStyle>
-                                    <Input disabled={editDisable} placeholder="请输入 Git 仓库地址" />
+                                    <Input disabled={editDisable} placeholder="请输入 Git 仓库地址" style={{ height: 32 }} />
                                 </Form.Item>
                                 {editDisable
                                     ? <Button icon={<EditOutlined />} onClick={() => setEditDisable(false)} />
@@ -213,7 +213,7 @@ const Setting: React.FC = () => {
                         {/* 本地备份目录 */}
                         <Form.Item label="本地备份目录" style={{ marginBottom: 16 }}>
                             <Space.Compact style={{ width: '100%' }}>
-                                <Input value={config.backupDirectory || ''} readOnly placeholder="选择备份存放目录" />
+                                <Input value={config.backupDirectory || ''} readOnly placeholder="选择备份存放目录" style={{ height: 32 }} />
                                 <Button icon={<EllipsisOutlined />} onClick={selectBackupDirectory} />
                                 <Button icon={<CloseOutlined />} onClick={async () => {
                                     await window.electronAPI?.updateConfigJsonAsync({ backupDirectory: '', backupIntervalMinutes: 0 });

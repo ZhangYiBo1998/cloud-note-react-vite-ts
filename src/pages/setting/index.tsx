@@ -1,5 +1,5 @@
 import React, {useEffect, memo, useState, useContext} from "react";
-import {Card, Switch, Form, Input, Modal, Flex, Typography, message} from 'antd';
+import {Card, Switch, Form, Input, Button, Modal, Flex, Typography, message, Space} from 'antd';
 import {
     EllipsisOutlined,
     EditOutlined,
@@ -112,18 +112,19 @@ const Setting: React.FC = () => {
                                     onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
                         </Form.Item>
                         <Form.Item label="指定存档文件夹" style={{ marginBottom: 16 }}>
-                            <Input value={saveDirectory} addonAfter={<EllipsisOutlined onClick={selectSaveDirectory}/>}/>
+                            <Space.Compact style={{ width: '100%' }}>
+                                <Input value={saveDirectory} readOnly />
+                                <Button icon={<EllipsisOutlined />} onClick={selectSaveDirectory} />
+                            </Space.Compact>
                         </Form.Item>
                         <Form.Item label="Git 仓库地址" name="gitUrl" style={{ marginBottom: 16 }}>
-                            <Input
-                                disabled={editDisable}
-                                placeholder="请输入 Git 仓库地址"
-                                addonAfter={
-                                    editDisable
-                                        ? <EditOutlined onClick={() => setEditDisable(false)}/>
-                                        : <SaveOutlined onClick={saveGitUrl} style={saving ? {opacity: 0.4, pointerEvents: 'none'} : {}}/>
+                            <Space.Compact style={{ width: '100%' }}>
+                                <Input disabled={editDisable} placeholder="请输入 Git 仓库地址" />
+                                {editDisable
+                                    ? <Button icon={<EditOutlined />} onClick={() => setEditDisable(false)} />
+                                    : <Button icon={<SaveOutlined />} onClick={saveGitUrl} loading={saving} />
                                 }
-                            />
+                            </Space.Compact>
                         </Form.Item>
                     </Form>
                 </Card>

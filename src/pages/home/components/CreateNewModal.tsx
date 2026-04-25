@@ -152,28 +152,27 @@ const CreateNewModal: React.FC<IProps> = (props) => {
                                 name="fileName"
                                 rules={[{required: true, message: '文件名是必填项！'}]}
                             >
-                                <Input
-                                    addonBefore={(
-                                        <Form.Item<IFieldValues>
-                                            name="fileType"
-                                            noStyle
-                                        >
-                                            <Select
-                                                style={{width: 100}}
-                                                options={[
-                                                    {
-                                                        label: '普通文本',
-                                                        value: FILE_TYPE.text,
-                                                    },
-                                                    {
-                                                        label: 'Md文档',
-                                                        value: FILE_TYPE.Markdown,
-                                                    },
-                                                ]}
-                                            />
-                                        </Form.Item>
-                                    )}
-                                />
+                                <Space.Compact style={{ width: '100%' }}>
+                                    <Form.Item<IFieldValues>
+                                        name="fileType"
+                                        noStyle
+                                    >
+                                        <Select
+                                            style={{ width: 100 }}
+                                            options={[
+                                                {
+                                                    label: '普通文本',
+                                                    value: FILE_TYPE.text,
+                                                },
+                                                {
+                                                    label: 'Md文档',
+                                                    value: FILE_TYPE.Markdown,
+                                                },
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                    <Input />
+                                </Space.Compact>
                             </Form.Item>
                         </>
                     )}

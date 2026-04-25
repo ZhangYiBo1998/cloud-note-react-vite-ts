@@ -1,61 +1,109 @@
-div {
-    /*border: 1px solid black;*/
+:root {
+  --header-bg: #f5f5f7;
+  --sidebar-bg: #fafafa;
+  --content-bg: #ffffff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --border-color: #e8e8ed;
+  --btn-bg: #ffffff;
+  --btn-border: #d2d2d7;
+  --btn-color: #1d1d1f;
+  --btn-hover-bg: rgba(0, 113, 227, 0.08);
+  --btn-hover-border: #0071e3;
+  --btn-hover-color: #0071e3;
 }
 
 body {
-    margin: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .cursor-pointer {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .drag-area {
-    -webkit-app-region: drag;
+  -webkit-app-region: drag;
 }
 .no-drag-area {
-    -webkit-app-region: no-drag;
+  -webkit-app-region: no-drag;
 }
 
 .height-100 {
-    height: 100%;
+  height: 100%;
 }
 
 .flex-1 {
-    flex: 1;
+  flex: 1;
 }
 
 .flex-shrink-0 {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .scrollable {
-    overflow-y: auto;
+  overflow-y: auto;
 }
 
-/* 简约风格 */
+/* Scrollbar */
 ::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #abb1b6;
-    border-radius: 4px;
+  background: #c7c7cc;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #8e9397;
+  background: #a8a8ad;
+}
+
+/* System window controls */
+.system-icon {
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: var(--text-secondary, #6e6e73);
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.system-icon:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .system-icon-close:hover {
-    background-color: #f42828;
-    color: #fff;
+  background: #e81123 !important;
+  color: #fff !important;
 }
-.system-icon-Minus:hover {
-    background-color: #9f9b9b;
-    color: #fff;
+
+/* New note button */
+.new-note-btn {
+  width: 100%;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--btn-border, #d2d2d7);
+  border-radius: 8px;
+  background: var(--btn-bg, #ffffff);
+  color: var(--btn-color, #1d1d1f);
+  transition: all 0.2s ease;
+}
+
+.new-note-btn:hover {
+  background: var(--btn-hover-bg, rgba(0, 113, 227, 0.08));
+  border-color: var(--btn-hover-border, #0071e3);
+  color: var(--btn-hover-color, #0071e3);
+}
+
+.new-note-btn:active {
+  transform: scale(0.98);
 }

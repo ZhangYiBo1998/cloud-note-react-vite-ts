@@ -1,22 +1,39 @@
-import React, {memo, useState, useMemo} from "react";
-import {Menu, Button, Dropdown, Modal} from "antd";
+import React, {memo, useState, useMemo, useEffect, useRef} from "react";
+import {Menu, Dropdown, Modal, Input} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
 import useNoteInfo from "../../hooks/useNoteInfo";
 import CreateNewModal from "./CreateNewModal";
 import type {IGroupsItem, IGroupsItemMap, INoteItem} from "../../../types";
 
-const NoteGroups: React.FC = () => {
+interface NoteGroupsProps {
+    filteredGroups?: IGroupsItem[];
+    searchTerm?: string;
+}
+
+const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) => {
     const navigate = useNavigate();
     const {
-        groups,
+        groups: allGroups,
         groupsMap,
         setGroupsConfig,
     } = useNoteInfo()
+    const groups = filteredGroups || allGroups;
 
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
     const [openKeys, setOpenKeys] = useState<string[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // 首次挂载时自动展开所有分组
+    const expanded = useRef(false);
+    useEffect(() => {
+        if (!expanded.current && groups.length > 0) {
+            setOpenKeys(groups.map(g => g.key));
+            expanded.current = true;
+        }
+    }, [groups]);
+    const [renameVisible, setRenameVisible] = useState(false);
+    const [renameTarget, setRenameTarget] = useState<{ key: string; name: string; type: 'note' | 'group' } | null>(null);
+    const [renameValue, setRenameValue] = useState('');
 
     const items = useMemo(() => {
         return groups.map((group) => {
@@ -38,7 +55,9 @@ const NoteGroups: React.FC = () => {
                             if (key === 'delete') {
                                 await deleteGroup(group.key)
                             } else if (key === 'rename') {
-                                console.log(`rename`);
+                                setRenameTarget({ key: group.key, name: group.name, type: 'group' });
+                                setRenameValue(group.name);
+                                setRenameVisible(true);
                             }
                         }
                     }} trigger={['contextMenu']}>
@@ -66,7 +85,9 @@ const NoteGroups: React.FC = () => {
                                     if (key === 'delete') {
                                         await deleteNoteInGroup(child.key)
                                     } else if (key === 'rename') {
-                                        console.log(`rename`);
+                                        setRenameTarget({ key: child.key, name: child.name, type: 'note' });
+                                        setRenameValue(child.name);
+                                        setRenameVisible(true);
                                     }
                                 }
                             }} trigger={['contextMenu']}>
@@ -167,39 +188,65 @@ const NoteGroups: React.FC = () => {
         })
     }
 
+    const handleRenameOk = async () => {
+        if (!renameTarget || !renameValue.trim()) return;
+        try {
+            const newGroupsConfig = renameTarget.type === 'note'
+                ? await window.electronAPI.renameNoteAsync(renameTarget.key, renameValue.trim())
+                : await window.electronAPI.renameGroupAsync(renameTarget.key, renameValue.trim());
+            setGroupsConfig(newGroupsConfig);
+        } catch (err) {
+            console.error('重命名失败:', err);
+        }
+        setRenameVisible(false);
+        setRenameTarget(null);
+    }
+
     return (
-        <div className="scrollable" style={{background: '#FAFAFA', height: '100%'}}>
-            <Button
-                style={{
-                    width: '100%',
-                    margin: '10px 0',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 100,
-                }}
-                color="primary"
-                variant="outlined"
-                onClick={() => {
-                    setIsModalOpen(true);
-                }}
-            >
-                新建
-            </Button>
-            <Menu
-                style={{border: '1px solid #e8e8e8', borderBottom: 'none'}}
-                onSelect={onSelect}
-                onOpenChange={onOpenChange}
-                selectedKeys={selectedKeys}
-                openKeys={openKeys}
-                mode="inline"
-                items={items}
-            />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ padding: '0 12px 8px' }}>
+                <button
+                    className="new-note-btn"
+                    onClick={() => setIsModalOpen(true)}
+                >
+                    + 新建笔记
+                </button>
+            </div>
+            <div className="scrollable" style={{ flex: 1 }}>
+                <Menu
+                    style={{ border: 'none', background: 'transparent' }}
+                    onSelect={onSelect}
+                    onOpenChange={onOpenChange}
+                    selectedKeys={selectedKeys}
+                    openKeys={openKeys}
+                    mode="inline"
+                    inlineIndent={16}
+                    items={items}
+                />
+            </div>
             <CreateNewModal
                 visible={isModalOpen}
                 visibleChange={setIsModalOpen}
                 createNewGroup={createNewGroup}
                 createNewNoteInGroup={createNewNoteInGroup}
             />
+            <Modal
+                title="重命名"
+                open={renameVisible}
+                okText="确认"
+                cancelText="取消"
+                onOk={handleRenameOk}
+                onCancel={() => {
+                    setRenameVisible(false);
+                    setRenameTarget(null);
+                }}
+            >
+                <Input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onPressEnter={handleRenameOk}
+                />
+            </Modal>
         </div>
     );
 };

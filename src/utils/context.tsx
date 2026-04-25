@@ -3,6 +3,6 @@ import type {ISettingsContextValue, IConfigContextValue, IGroupsContextValue} fr
 
 export const SettingsContext = createContext<ISettingsContextValue>({} as ISettingsContextValue);
 
-export const ConfigContext = createContext<IConfigContextValue>({})
+export const ConfigContext = createContext<IConfigContextValue>({} as IConfigContextValue)
 
 export const GroupsContext = createContext<IGroupsContextValue>({} as IGroupsContextValue)

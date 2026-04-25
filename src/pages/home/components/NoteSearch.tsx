@@ -1,65 +1,40 @@
-import React, {useState, memo} from "react";
-import {Flex, type GetProps, Input, Select, Space} from "antd";
+import React, {memo} from "react";
+import {Input} from "antd";
+import {SearchOutlined} from "@ant-design/icons";
 
-type SearchProps = GetProps<typeof Input.Search>;
-
-const {Search} = Input;
-
-interface IGroupsOptionsItem {
-    value: string;
-    label: string;
-    placeholder: string;
+interface NoteSearchProps {
+    searchType: string;
+    onSearchTypeChange: (type: string) => void;
+    onSearch: (value: string, type: string) => void;
 }
 
-interface IGroupsOptionsMap {
-    [key: string]: IGroupsOptionsItem;
-}
-
-const options: IGroupsOptionsItem[] = [
-    {
-        value: 'fileName',
-        label: '文件名',
-        placeholder: '搜索文件名',
-    },
-    {
-        value: 'tags',
-        label: '标签',
-        placeholder: '搜索标签',
-    },
-];
-
-const searchTypeMap = options.reduce((obj: IGroupsOptionsMap, item) => {
-    obj[item.value] = item;
-    return obj
-}, {} as IGroupsOptionsMap);
-
-const NoteSearch: React.FC = () => {
-    // 搜索类型
-    const [searchType, setSearchType] = useState('fileName');
-
-    // 根据类型搜索
-    const onSearch: SearchProps['onSearch'] = async (value) => {
-        if (!value) {
-            return;
-        }
-    };
-
+const NoteSearch: React.FC<NoteSearchProps> = ({ searchType, onSearch, onSearchTypeChange }) => {
     return (
-        <Flex className="right" justify="center" align="center" style={{padding: "0 20px"}}>
-            <Space.Compact>
-                <Select
-                    style={{width: '100px'}}
-                    options={options}
+        <Input
+            size="small"
+            placeholder={searchType === 'tags' ? '搜索标签...' : '搜索文件名...'}
+            prefix={<SearchOutlined style={{ color: '#8e8e93' }} />}
+            onChange={(e) => onSearch(e.target.value, searchType)}
+            style={{ borderRadius: 6 }}
+            addonBefore={
+                <select
                     value={searchType}
-                    onChange={(value) => setSearchType(value)}
-                />
-                <Search
-                    style={{width: '400px'}}
-                    placeholder={searchTypeMap[searchType].placeholder}
-                    onSearch={onSearch}
-                />
-            </Space.Compact>
-        </Flex>
+                    onChange={(e) => onSearchTypeChange(e.target.value)}
+                    style={{
+                        border: 'none',
+                        background: 'transparent',
+                        fontSize: 12,
+                        color: '#8e8e93',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        padding: 0,
+                    }}
+                >
+                    <option value="fileName">文件名</option>
+                    <option value="tags">标签</option>
+                </select>
+            }
+        />
     );
 };
 

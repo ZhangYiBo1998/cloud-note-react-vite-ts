@@ -1,50 +1,32 @@
-//设置scss变量
-$container-height: calc(100vh - 90px);
-$container-width: calc(100% - 160px);;
+// Clean layout - styles handled by inline Flex layout in Home.tsx
+// Sidebar and content use CSS variables from App.css for theming
 
-#cloudNoteHome {
-  width: 100%;
-  flex: 1;
-
-  .header {
-    width: 100%;
-    height: 50px;
-    background-color: #E6F7FF;
-
-    .left {
-      width: 160px;
-
-      .logo {
-        width: 50px;
-        height: 50px;
-        margin-left: 5px;
-
-        img {
-          width: 30px;
-          height: auto;
-        }
-      }
-    }
-
-    .right {
-      width: $container-width;
-      flex: 1;
-    }
+// Note groups sidebar
+.sidebar {
+  .ant-menu-inline {
+    border-inline-end: none !important;
   }
 
-  .container {
-    height: $container-height;
-
-    .sidebar {
-      width: 160px;
-      height: $container-height;
-    }
-
-    .content {
-      width: $container-width;
-      flex: 1;
-      height: $container-height;
-    }
+  .ant-menu-item {
+    margin: 0 4px !important;
+    width: calc(100% - 8px) !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
   }
 
+  .ant-menu-submenu-title {
+    margin: 0 4px !important;
+    width: calc(100% - 8px) !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+  }
+}
+
+// Note editor area
+.note-editor {
+  .ant-select {
+    .ant-select-selector {
+      border-radius: 6px !important;
+    }
+  }
 }

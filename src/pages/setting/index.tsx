@@ -1,5 +1,5 @@
 import React, {useEffect, memo, useState, useContext} from "react";
-import {Card, Switch, Form, Input, Modal} from 'antd';
+import {Card, Switch, Form, Input, Modal, Flex, Typography, message} from 'antd';
 import {
     EllipsisOutlined,
     EditOutlined,
@@ -7,27 +7,42 @@ import {
 } from '@ant-design/icons';
 import {
     SettingsContext,
+    ConfigContext,
 } from "../../utils/context";
 import useNoteInfo from "../hooks/useNoteInfo";
 
+const {Title} = Typography;
+
 const Setting: React.FC = () => {
     const {settings, setSettings} = useContext(SettingsContext);
+    const { config, setConfig } = useContext(ConfigContext);
     const {
         saveDirectory,
     } = useNoteInfo();
 
     const [form] = Form.useForm()
-    // 开机自启
     const [autoLaunchValue, setAutoLaunchValue] = useState(false);
     const [editDisable, setEditDisable] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [gitRemoteUrl, setGitRemoteUrl] = useState<string | null>(null);
 
-    let preGitUrl = 'https://github.com/ZhangYiBo1998/cloud-note-save.git'
+    const gitUrl = gitRemoteUrl ?? config.gitUrl ?? '';
 
     useEffect(() => {
         window.electronAPI.getAutoLaunch().then(enabled => {
             setAutoLaunchValue(enabled)
         })
     }, []);
+
+    useEffect(() => {
+        window.electronAPI?.getGitRemoteUrlAsync().then((url) => {
+            if (url) setGitRemoteUrl(url);
+        });
+    }, []);
+
+    useEffect(() => {
+        form.setFieldValue('gitUrl', gitUrl);
+    }, [gitUrl, form]);
 
     const setAutoLaunchHandler = (checked: boolean) => {
         setAutoLaunchValue(checked);
@@ -44,48 +59,82 @@ const Setting: React.FC = () => {
     }
 
     const saveGitUrl = async () => {
+        const newGitUrl = form.getFieldValue('gitUrl')?.trim();
+        if (!newGitUrl) return;
+
         Modal.confirm({
             title: '提示',
-            content: '确认修改仓库地址？',
+            content: '修改仓库地址后，笔记将同步到新的 Git 仓库。确认修改？',
             okText: '确认',
             cancelText: '取消',
             onOk: async () => {
-                const gitUrl = form.getFieldValue('gitUrl')
-                preGitUrl = gitUrl;
-                window.electronAPI?.initGitHubAsync(gitUrl)
+                setSaving(true);
+                try {
+                    await window.electronAPI?.updateConfigJsonAsync({
+                        gitUrl: newGitUrl,
+                    });
+                    await window.electronAPI?.initGitHubAsync(newGitUrl);
+                    setConfig(prev => ({ ...prev, gitUrl: newGitUrl }));
+                    setGitRemoteUrl(newGitUrl);
+                    message.success('Git 仓库地址已更新');
+                    setEditDisable(true);
+                } catch (err) {
+                    console.error('修改 Git 仓库地址失败:', err);
+                    message.error('修改失败，请检查地址是否正确');
+                    form.setFieldValue('gitUrl', gitUrl);
+                } finally {
+                    setSaving(false);
+                }
             },
             onCancel: () => {
                 setEditDisable(true);
-                form.setFieldValue('gitUrl', preGitUrl);
+                form.setFieldValue('gitUrl', gitUrl);
             }
         })
     }
 
     return (
-        <Card title="设置" variant="borderless">
-            <Form form={form}>
-                <Form.Item label="开机自启">
-                    <Switch value={autoLaunchValue} onChange={setAutoLaunchHandler}/>
-                </Form.Item>
-                <Form.Item label="关闭应用时最小化到系统托盘">
-                    <Switch value={settings.closeType === 'hide'}
-                            onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
-                </Form.Item>
-                <Form.Item label="指定存档文件夹">
-                    <Input value={saveDirectory} addonAfter={<EllipsisOutlined onClick={selectSaveDirectory}/>}/>
-                </Form.Item>
-                <Form.Item label="git仓库地址" name="gitUrl">
-                    <Input
-                        disabled={editDisable}
-                        addonAfter={
-                            editDisable
-                                ? <EditOutlined onClick={() => setEditDisable(false)}/>
-                                : <SaveOutlined onClick={saveGitUrl}/>
-                        }
-                    />
-                </Form.Item>
-            </Form>
-        </Card>
+        <div className="scrollable" style={{ height: '100%', background: 'var(--content-bg, #ffffff)', padding: 24 }}>
+            <div style={{ maxWidth: 600, margin: '0 auto' }}>
+                <Title level={4} style={{ marginBottom: 24 }}>设置</Title>
+                <Card variant="borderless" style={{ borderRadius: 10 }}>
+                    <Form form={form} layout="vertical">
+                        <Form.Item label="外观主题" style={{ marginBottom: 16 }}>
+                            <Flex align="center" gap={12}>
+                                <Switch
+                                    checked={settings.theme === 'dark'}
+                                    onChange={(checked) => setSettings({...settings, theme: checked ? 'dark' : 'light'})}
+                                />
+                                <Typography.Text type="secondary">
+                                    {settings.theme === 'dark' ? '深色模式' : '浅色模式'}
+                                </Typography.Text>
+                            </Flex>
+                        </Form.Item>
+                        <Form.Item label="开机自启" style={{ marginBottom: 16 }}>
+                            <Switch value={autoLaunchValue} onChange={setAutoLaunchHandler}/>
+                        </Form.Item>
+                        <Form.Item label="关闭应用时最小化到系统托盘" style={{ marginBottom: 16 }}>
+                            <Switch value={settings.closeType === 'hide'}
+                                    onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
+                        </Form.Item>
+                        <Form.Item label="指定存档文件夹" style={{ marginBottom: 16 }}>
+                            <Input value={saveDirectory} addonAfter={<EllipsisOutlined onClick={selectSaveDirectory}/>}/>
+                        </Form.Item>
+                        <Form.Item label="Git 仓库地址" name="gitUrl" style={{ marginBottom: 16 }}>
+                            <Input
+                                disabled={editDisable}
+                                placeholder="请输入 Git 仓库地址"
+                                addonAfter={
+                                    editDisable
+                                        ? <EditOutlined onClick={() => setEditDisable(false)}/>
+                                        : <SaveOutlined onClick={saveGitUrl} style={saving ? {opacity: 0.4, pointerEvents: 'none'} : {}}/>
+                                }
+                            />
+                        </Form.Item>
+                    </Form>
+                </Card>
+            </div>
+        </div>
     );
 };
 

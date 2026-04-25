@@ -1,80 +1,72 @@
-import React, {memo, useContext, useState} from "react";
+import React, {memo} from "react";
 import type {PropsWithChildren} from "react";
 import {
-    HomeOutlined,
-    SettingOutlined,
     MinusOutlined,
     CloseOutlined,
+    SettingOutlined,
+    HomeOutlined,
 } from '@ant-design/icons';
 import {Flex} from "antd";
-import {useNavigate} from "react-router";
-import {
-    SettingsContext,
-} from "../../utils/context";
+import {useNavigate, useLocation} from "react-router";
 
 const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const {children} = props;
-    // 获取配置项
-    const {settings} = useContext(SettingsContext);
     const navigate = useNavigate();
-
-    const [isHome, setIsHome] = useState(true);
+    const location = useLocation();
+    const isSettings = location.pathname.startsWith('/setting');
 
     return (
-        <Flex vertical>
+        <Flex vertical style={{ height: '100vh' }}>
             <Flex
-                className="drag-area" justify="space-between"
-                style={{height: '40px', backgroundColor: '#7ed0f6', paddingLeft: '15px'}}
+                className="drag-area"
+                justify="space-between"
+                align="center"
+                style={{
+                    height: '36px',
+                    paddingLeft: '12px',
+                    paddingRight: '4px',
+                    background: 'var(--header-bg, transparent)',
+                    userSelect: 'none',
+                }}
             >
-                <Flex>
-                    {
-                        isHome ? (
-                            <SettingOutlined
-                                className="no-drag-area"
-                                onClick={() => {
-                                    navigate('/setting')
-                                    setIsHome(false)
-                                }}
-                            />
-                        ) : (
-                            <HomeOutlined
-                                className="no-drag-area"
-                                onClick={() => {
-                                    navigate(-1)
-                                    setIsHome(true)
-                                }}
-                            />
-                        )
-                    }
+                <Flex align="center" gap={6} style={{ fontSize: 13, color: 'var(--text-secondary, #6e6e73)' }}>
+                    <Flex
+                        className="no-drag-area system-icon"
+                        justify="center"
+                        align="center"
+                        onClick={() => navigate(isSettings ? '/home' : '/setting')}
+                        title={isSettings ? '返回首页' : '设置'}
+                    >
+                        {isSettings
+                            ? <HomeOutlined style={{ fontSize: 13 }} />
+                            : <SettingOutlined style={{ fontSize: 13 }} />
+                        }
+                    </Flex>
+                    Cloud Note
                 </Flex>
                 <Flex>
                     <Flex
-                        className="no-drag-area system-icon-Minus"
-                        style={{ width: '40px', height: '40px' }}
+                        className="no-drag-area system-icon system-icon-minimize"
                         justify="center"
                         align="center"
                         onClick={() => window.electronAPI?.hideWindow()}
                     >
-                        <MinusOutlined />
+                        <MinusOutlined style={{ fontSize: 12 }} />
                     </Flex>
                     <Flex
-                        className="no-drag-area system-icon-close"
-                        style={{ width: '40px', height: '40px' }}
+                        className="no-drag-area system-icon system-icon-close"
                         justify="center"
                         align="center"
                         onClick={() => {
-                            if (settings.closeType === 'hide') {
-                                window.electronAPI?.hideWindow();
-                                return;
-                            }
-
-                            if (settings.closeType === 'quit') {
+                            const closeType = (window as any).__closeType;
+                            if (closeType === 'quit') {
                                 window.electronAPI?.closeWindow();
-                                return;
+                            } else {
+                                window.electronAPI?.hideWindow();
                             }
                         }}
                     >
-                        <CloseOutlined />
+                        <CloseOutlined style={{ fontSize: 12 }} />
                     </Flex>
                 </Flex>
             </Flex>

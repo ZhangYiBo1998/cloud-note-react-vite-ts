@@ -11,7 +11,17 @@ export interface ISettingsContextValue {
 }
 
 export interface IConfigContextValue {
+    config: IConfigData;
+    setConfig: Dispatch<SetStateAction<IConfigData>>;
+}
+
+export interface IConfigData {
     saveDirectory?: string;
+    gitUrl?: string;
+    closeType?: 'hide' | 'quit';
+    theme?: 'light' | 'dark';
+    backupDirectory?: string;
+    backupIntervalMinutes?: number;
 }
 
 export interface ICommonItem {

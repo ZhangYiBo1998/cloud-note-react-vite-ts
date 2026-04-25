@@ -15,8 +15,10 @@ const NoteEdit: React.FC = () => {
     const params = useParams();
     const {
         groupsMap,
+        groups,
+        setGroupsConfig,
     } = useNoteInfo()
-    const [editorType, setEditorType] = useState('txt');
+    const [editorType, setEditorType] = useState(FILE_TYPE.text);
     const [tagsValue, setTagsValue] = useState<string[]>([]);
     const [noteValue, setNoteValue] = useState('');
 
@@ -32,8 +34,25 @@ const NoteEdit: React.FC = () => {
         })
     }, [params.id]);
 
+    // Persist tags to groups.json when they change (no debounce needed — Select fires on explicit add/remove)
     useEffect(() => {
-
+        if (!params.id) return;
+        const noteId = params.id;
+        const tags = tagsValue;
+        window.electronAPI?.updateNoteTagsAsync(noteId, tags);
+        // Update local groupsConfig so groupsMap reflects tag changes
+        const updatedGroups = groups.map((g) => {
+            if (g.children?.some(c => c.key === noteId)) {
+                return {
+                    ...g,
+                    children: g.children.map(c =>
+                        c.key === noteId ? { ...c, tags, updateTime: Date.now() } : c
+                    ),
+                };
+            }
+            return g;
+        });
+        setGroupsConfig({ groups: updatedGroups });
     }, [tagsValue]);
 
     const writeNoteAsync = useCallback(debounce((value: string) => {
@@ -42,6 +61,15 @@ const NoteEdit: React.FC = () => {
         }
         window.electronAPI?.writeNoteAsync(params.id, value)
     }, 3000), [params.id])
+
+    // 未选中笔记时显示占位提示
+    if (!params.id) {
+        return (
+            <Flex justify="center" align="center" style={{ height: '100%', color: 'var(--text-secondary, #6e6e73)', fontSize: 14 }}>
+                选择或新建一条笔记开始编辑
+            </Flex>
+        );
+    }
 
     return (
         <div className="scrollable" key={params.id}>

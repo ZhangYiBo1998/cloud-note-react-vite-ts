@@ -16,8 +16,10 @@ interface SyncStatusBarProps {
 }
 
 const SyncStatusBar: React.FC<SyncStatusBarProps> = ({ status, message, onSyncNow }) => {
+  // idle 且无消息时不显示
   if (status === 'idle' && !message) return null;
 
+  /** 根据同步状态返回对应的图标元素 */
   const icon = () => {
     switch (status) {
       case 'syncing':

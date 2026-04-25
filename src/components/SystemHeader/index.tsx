@@ -1,22 +1,35 @@
-import React, {memo} from "react";
+/**
+ * 系统标题栏组件
+ *
+ * 自定义窗口标题栏（frame: false），包含：
+ * - 左侧：设置/首页导航图标 + 应用名
+ * - 右侧：最小化 → 隐藏到托盘、关闭按钮（根据 closeType 决定隐藏还是退出）
+ * - 顶部区域可拖拽移动窗口（drag-area）
+ */
+import React, {memo, useContext} from "react";
 import type {PropsWithChildren} from "react";
 import {
     MinusOutlined,
     CloseOutlined,
     SettingOutlined,
     HomeOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import {Flex} from "antd";
 import {useNavigate, useLocation} from "react-router";
+import {SidebarContext} from "../../utils/context";
 
 const SystemHeader: React.FC<PropsWithChildren> = (props) => {
     const {children} = props;
     const navigate = useNavigate();
     const location = useLocation();
     const isSettings = location.pathname.startsWith('/setting');
+    const { collapsed, toggleCollapse } = useContext(SidebarContext);
 
     return (
         <Flex vertical style={{ height: '100vh' }}>
+            {/* 拖拽栏（drag-area） */}
             <Flex
                 className="drag-area"
                 justify="space-between"
@@ -29,7 +42,24 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                     userSelect: 'none',
                 }}
             >
-                <Flex align="center" gap={6} style={{ fontSize: 13, color: 'var(--text-secondary, #6e6e73)' }}>
+                {/* 左侧导航区域 */}
+                <Flex align="center" gap={4} style={{ fontSize: 13, color: 'var(--text-secondary, #6e6e73)' }}>
+                    {/* 侧边栏折叠/展开按钮 */}
+                    {!isSettings && (
+                        <Flex
+                            className="no-drag-area system-icon"
+                            justify="center"
+                            align="center"
+                            onClick={toggleCollapse}
+                            title={collapsed ? '展开侧边栏' : '折叠侧边栏'}
+                        >
+                            {collapsed
+                                ? <MenuUnfoldOutlined style={{ fontSize: 13 }} />
+                                : <MenuFoldOutlined style={{ fontSize: 13 }} />
+                            }
+                        </Flex>
+                    )}
+                    {/* 齿轮/首页图标：根据当前路由自动切换 */}
                     <Flex
                         className="no-drag-area system-icon"
                         justify="center"
@@ -44,7 +74,9 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                     </Flex>
                     Cloud Note
                 </Flex>
+                {/* 右侧窗口控制区域 */}
                 <Flex>
+                    {/* 最小化 → 隐藏到系统托盘 */}
                     <Flex
                         className="no-drag-area system-icon system-icon-minimize"
                         justify="center"
@@ -53,6 +85,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                     >
                         <MinusOutlined style={{ fontSize: 12 }} />
                     </Flex>
+                    {/* 关闭按钮：根据 closeType 决定退出还是隐藏 */}
                     <Flex
                         className="no-drag-area system-icon system-icon-close"
                         justify="center"
@@ -70,6 +103,7 @@ const SystemHeader: React.FC<PropsWithChildren> = (props) => {
                     </Flex>
                 </Flex>
             </Flex>
+            {/* 路由内容出口 */}
             {children}
         </Flex>
     );

@@ -1,12 +1,27 @@
+/**
+ * Git 操作模块
+ *
+ * 在笔记存档目录内执行 git 命令，提供仓库初始化、推送、远程地址查询。
+ * 所有 git 操作通过 child_process.exec 执行，cwd 为存档目录。
+ * 返回统一的 GitResult { success, output/error } 结构，永不 throw。
+ */
+
 import { exec } from 'child_process';
 import { getAppSaveDirectoryAsync } from '../utils/tools';
 
+/** Git 操作结果 */
 export interface GitResult {
   success: boolean;
   output?: string;
   error?: string;
 }
 
+/**
+ * 在存档目录中执行 git 命令
+ * @param command 要执行的 git 命令
+ * @param options exec 额外选项
+ * @returns stdout 输出
+ */
 function executeGitCommand(command: string, options?: Record<string, unknown>): Promise<string> {
   return new Promise(async (resolve, reject) => {
     const projectPath = await getAppSaveDirectoryAsync();
@@ -21,11 +36,17 @@ function executeGitCommand(command: string, options?: Record<string, unknown>): 
   });
 }
 
+/** 检查工作区是否有未提交的变更 */
 async function checkGitStatusChange(): Promise<boolean> {
   const statusOutput = await executeGitCommand('git status --porcelain');
   return statusOutput.trim().length > 0;
 }
 
+/**
+ * 初始化 Git 仓库并关联远程 origin
+ * 1. git init → git remote remove origin → git remote add origin <url>
+ * 2. git add . → git commit → git branch -M master → git push -u origin master
+ */
 export async function initGitHubAsync(url: string): Promise<GitResult> {
   try {
     console.log('开始初始化 GitHub 仓库...');
@@ -64,6 +85,7 @@ export async function initGitHubAsync(url: string): Promise<GitResult> {
   }
 }
 
+/** 获取当前 origin 远程 URL，未配置时返回空字符串 */
 export async function getGitRemoteUrlAsync(): Promise<string> {
   try {
     const url = await executeGitCommand('git remote get-url origin');
@@ -73,6 +95,11 @@ export async function getGitRemoteUrlAsync(): Promise<string> {
   }
 }
 
+/**
+ * 推送到 GitHub
+ * 先拉取远程更新（git pull），再推送本地变更（git push）
+ * 无变更时跳过推送
+ */
 export async function pushToGitHubAsync(): Promise<GitResult> {
   try {
     await executeGitCommand('git pull origin master');

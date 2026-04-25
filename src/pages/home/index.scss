@@ -22,6 +22,28 @@
   }
 }
 
+// 折叠状态：宽度强制为 0
+.sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+// 拖拽调整宽度手柄
+.resize-handle {
+  cursor: col-resize;
+  width: 4px;
+  min-width: 4px;
+  height: 100%;
+  z-index: 10;
+  user-select: none;
+
+  &:hover {
+    background: var(--color-primary, #0071e3) !important;
+    opacity: 0.6;
+  }
+}
+
 // Note editor area
 .note-editor {
   .ant-select {

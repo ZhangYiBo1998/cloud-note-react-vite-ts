@@ -1,8 +1,15 @@
+/**
+ * 窗口控制 IPC Handler
+ *
+ * 全部使用 ipcMain.on（send/on 单向模式），渲染进程不等待响应。
+ * 从 event.sender 反查 BrowserWindow 实例执行操作。
+ */
 import { ipcMain, BrowserWindow } from 'electron';
 import { hideMainWindow } from '../utils/tools';
 import { IPC_CHANNELS } from '../shared/ipc-channels';
 
 export function registerWindowHandlers(): void {
+  /** 隐藏窗口到系统托盘（不关闭） */
   ipcMain.on(IPC_CHANNELS.WINDOW_HIDE, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
@@ -10,6 +17,7 @@ export function registerWindowHandlers(): void {
     }
   });
 
+  /** 最小化窗口到任务栏 */
   ipcMain.on(IPC_CHANNELS.WINDOW_MINIMIZE, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
@@ -17,6 +25,7 @@ export function registerWindowHandlers(): void {
     }
   });
 
+  /** 关闭窗口 */
   ipcMain.on(IPC_CHANNELS.WINDOW_CLOSE, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {

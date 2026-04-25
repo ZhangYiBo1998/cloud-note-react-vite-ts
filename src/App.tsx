@@ -1,3 +1,9 @@
+/**
+ * 应用根组件
+ *
+ * 职责：配置加载、主题切换、全局 Context 提供、Ant Design ConfigProvider 包裹。
+ * 启动流程：getConfigJsonAsync → 初始化 settings/groupsMap → 渲染路由树。
+ */
 import React, {useEffect, useMemo, useState} from 'react';
 import {Outlet} from "react-router";
 import {ConfigProvider} from "antd";
@@ -6,6 +12,7 @@ import {
     SettingsContext,
     ConfigContext,
     GroupsContext,
+    SidebarContext,
 } from "./utils/context";
 import type {
     ISettings,
@@ -13,23 +20,28 @@ import type {
     IGroupsContextValue,
     IGroupsMap,
 } from "./types";
+import {useResizablePanel} from "./hooks/useResizablePanel";
 import {lightTheme, darkTheme} from "./theme/tokens";
 import './App.css'
 
 const App: React.FC = () => {
-    // APP配置项
+    /** 应用配置（config.json 内容） */
     const [config, setConfig] = useState<IConfigData>({});
-    // 笔记列表
+    /** 笔记分组元数据 */
     const [groupsConfig, setGroupsConfig] = useState<IGroupsContextValue['groupsConfig']>({});
-    // 设置页配置
+    /** 用户偏好设置 */
     const [settings, setSettings] = useState<ISettings>({
         theme: 'light',
         closeType: 'hide',
     });
 
+    /** 侧边栏可拖拽/折叠状态 */
+    const sidebar = useResizablePanel();
+
+    // 根据主题切换选择对应的 Ant Design token 配置
     const theme = useMemo(() => settings.theme === 'dark' ? darkTheme : lightTheme, [settings.theme]);
 
-    // 同步 CSS 变量到 :root，保证深色模式下自定义颜色也切换
+    // 动态设置 CSS 自定义属性，控制非 Ant Design 组件的主题色彩
     useEffect(() => {
         const root = document.documentElement;
         if (settings.theme === 'dark') {
@@ -61,31 +73,33 @@ const App: React.FC = () => {
         }
     }, [settings.theme]);
 
+    // 应用启动初始化：加载配置 → 提取 settings → 加载笔记分组
     useEffect(() => {
         const init = async () => {
             try {
-                // 读取 config.json 的配置项
-                const _config = await window.electronAPI?.getConfigJsonAsync();
-                console.log('[App] config loaded:', _config);
-                if (!_config) {
+                const configResult = await window.electronAPI?.getConfigJsonAsync();
+                console.log('[App] config loaded:', configResult);
+                if (!configResult?.success || !configResult.data) {
                     console.warn('[App] Failed to load config, using defaults');
-                    setConfig({})
+                    setConfig({});
                     return;
                 }
-                setConfig(_config)
+                const _config = configResult.data;
+                setConfig(_config);
 
-                // 从配置中初始化设置项
+                // 从持久化配置中恢复用户偏好
                 setSettings({
                     theme: (_config.theme as 'light' | 'dark') || 'light',
                     closeType: (_config.closeType as 'hide' | 'quit') || 'hide',
-                })
+                });
 
-                // 获取保存目录后，读取笔记列表
+                // 有存档目录时才加载笔记列表
                 const saveDir = _config.saveDirectory;
                 if (saveDir) {
-                    // 读取笔记列表
-                    const _groupsConfig = await window.electronAPI?.getNoteGroupsAsync(saveDir);
-                    setGroupsConfig(_groupsConfig || {})
+                    const groupsResult = await window.electronAPI?.getNoteGroupsAsync(saveDir);
+                    if (groupsResult?.success) {
+                        setGroupsConfig(groupsResult.data || {});
+                    }
                 }
             } catch (err) {
                 console.error('[App] init error:', err);
@@ -95,7 +109,7 @@ const App: React.FC = () => {
         init();
     }, []);
 
-    // Persist settings changes (theme, closeType) to config.json
+    // 主题/关闭行为变更时自动持久化到 config.json
     useEffect(() => {
         (window as any).__closeType = settings.closeType;
         window.electronAPI?.updateConfigJsonAsync({
@@ -104,6 +118,12 @@ const App: React.FC = () => {
         });
     }, [settings.theme, settings.closeType]);
 
+    /**
+     * 将 groups 数组扁平化为 key → item 映射
+     * group 条目 type='group', parent=null
+     * file 条目 type='file', parent=groupKey
+     * 用于 O(1) 时间复杂度的笔记路径解析
+     */
     const groupsMap = useMemo(() => {
         return groupsConfig?.groups?.reduce((obj, item) => {
             obj[item.key] = {
@@ -136,9 +156,11 @@ const App: React.FC = () => {
                             setSettings,
                         }}
                     >
-                        <SystemHeader>
-                            <Outlet/>
-                        </SystemHeader>
+                        <SidebarContext.Provider value={sidebar}>
+                            <SystemHeader>
+                                <Outlet/>
+                            </SystemHeader>
+                        </SidebarContext.Provider>
                     </SettingsContext.Provider>
                 </GroupsContext.Provider>
             </ConfigContext.Provider>

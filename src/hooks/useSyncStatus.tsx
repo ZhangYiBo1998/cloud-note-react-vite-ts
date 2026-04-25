@@ -15,19 +15,22 @@ export function useSyncStatus() {
     message: '',
     lastSyncTime: null,
   });
+  /** 定时器引用，用于组件卸载时清理 */
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  /** 发起同步 — 将状态置为 syncing */
   const setSyncing = useCallback(() => {
     setState(prev => ({ ...prev, status: 'syncing', message: '同步中...' }));
   }, []);
 
+  /** 同步成功 — 显示成功消息，3 秒后自动恢复 idle */
   const setSuccess = useCallback((msg?: string) => {
     setState({
       status: 'success',
       message: msg || '同步成功',
       lastSyncTime: Date.now(),
     });
-    // Reset to idle after 3s
+    // 3 秒后恢复空闲状态
     setTimeout(() => {
       setState(prev => prev.status === 'success'
         ? { ...prev, status: 'idle', message: '' }
@@ -36,6 +39,7 @@ export function useSyncStatus() {
     }, 3000);
   }, []);
 
+  /** 同步失败 — 显示错误消息，不自动恢复 */
   const setError = useCallback((msg: string) => {
     setState({
       status: 'error',
@@ -44,12 +48,14 @@ export function useSyncStatus() {
     });
   }, []);
 
+  /** 立即执行一次 Git 推送同步 */
+  /** 立即执行一次 Git 推送同步 */
   const pushNow = useCallback(async () => {
     setSyncing();
     try {
       const result = await window.electronAPI?.pushToGitHubAsync();
       if (result?.success) {
-        setSuccess('同步成功');
+        setSuccess(result?.data || '同步成功');
       } else {
         setError(result?.error || '同步失败');
       }
@@ -58,7 +64,7 @@ export function useSyncStatus() {
     }
   }, [setSyncing, setSuccess, setError]);
 
-  // Auto-sync every 5 minutes
+  /** 挂载后每 5 分钟自动同步一次，卸载时清理定时器 */
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       pushNow();

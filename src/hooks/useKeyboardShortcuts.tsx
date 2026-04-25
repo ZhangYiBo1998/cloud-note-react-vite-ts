@@ -5,10 +5,17 @@ interface ShortcutMap {
   [key: string]: () => void;
 }
 
+/**
+ * 全局键盘快捷键 Hook
+ *
+ * 注册 mod+key（Ctrl/Cmd）组合快捷键，焦点在输入框内时自动跳过。
+ * 用法: useKeyboardShortcuts({ 'mod+n': () => openModal(), 'mod+s': () => save() })
+ */
 export function useKeyboardShortcuts(shortcuts: ShortcutMap) {
   useEffect(() => {
+    /** 全局键盘事件处理器 */
     const handler = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in inputs
+      // 焦点在输入元素内时不触发快捷键
       const target = e.target as HTMLElement;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
 

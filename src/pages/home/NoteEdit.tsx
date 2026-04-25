@@ -1,3 +1,14 @@
+/**
+ * 笔记编辑器
+ *
+ * 根据文件扩展名自动切换编辑器类型：
+ * - .txt  → Input.TextArea（纯文本）
+ * - .md   → ToastUIEditor（WYSIWYG Markdown）
+ * - .html → HtmlEditor（富文本）【待 Task 6 实现】
+ *
+ * 标签通过 Ant Design Select mode="tags" 管理，变更实时持久化。
+ * 笔记内容通过 3 秒防抖自动保存。
+ */
 import React, {useEffect, useState, memo, useCallback} from "react";
 import {
     Select,
@@ -5,6 +16,7 @@ import {
     Flex,
 } from "antd";
 import ToastUIEditor from "../components/ToastUIEditor";
+import HtmlEditor from "./components/HtmlEditor";
 import {FILE_TYPE} from "../../utils/Enums";
 import {useParams} from "react-router";
 import type {INoteItem} from "../../types";
@@ -18,29 +30,39 @@ const NoteEdit: React.FC = () => {
         groups,
         setGroupsConfig,
     } = useNoteInfo()
+    /** 当前文件扩展名，决定渲染哪个编辑器组件 */
     const [editorType, setEditorType] = useState(FILE_TYPE.text);
+    /** 标签列表 */
     const [tagsValue, setTagsValue] = useState<string[]>([]);
+    /** 笔记正文内容 */
     const [noteValue, setNoteValue] = useState('');
 
+    // 路由参数变化时（切换笔记），重新加载笔记内容和元数据
     useEffect(() => {
         if (!params.id) {
             return;
         }
-        window.electronAPI?.readNoteAsync(params.id).then((data: string) => {
+        window.electronAPI?.readNoteAsync(params.id).then((result) => {
+            if (!result?.success) {
+                console.error('读取笔记失败:', result?.error);
+                setNoteValue('');
+                return;
+            }
             const noteInfo = groupsMap[params.id as string] as INoteItem;
+            // 从文件名提取扩展名判断编辑器类型
             setEditorType(`.${noteInfo.name?.split?.('.')?.[1]}`);
             setTagsValue(noteInfo.tags || [])
-            setNoteValue(data)
+            setNoteValue(result.data || '')
         })
     }, [params.id]);
 
-    // Persist tags to groups.json when they change (no debounce needed — Select fires on explicit add/remove)
+    // 标签变更时立即持久化到 groups.json 并更新本地状态
     useEffect(() => {
         if (!params.id) return;
         const noteId = params.id;
         const tags = tagsValue;
         window.electronAPI?.updateNoteTagsAsync(noteId, tags);
-        // Update local groupsConfig so groupsMap reflects tag changes
+        // 更新本地 groupsConfig 使侧边栏标签实时反映
         const updatedGroups = groups.map((g) => {
             if (g.children?.some(c => c.key === noteId)) {
                 return {
@@ -55,6 +77,7 @@ const NoteEdit: React.FC = () => {
         setGroupsConfig({ groups: updatedGroups });
     }, [tagsValue]);
 
+    // 3 秒防抖自动保存，避免频繁写入磁盘
     const writeNoteAsync = useCallback(debounce((value: string) => {
         if (!params.id) {
             return;
@@ -74,6 +97,7 @@ const NoteEdit: React.FC = () => {
     return (
         <div className="scrollable" key={params.id}>
             <Flex vertical gap={10} style={{padding: 10}}>
+                {/* 标签输入（支持自由输入 + 多选） */}
                 <Select
                     mode="tags"
                     style={{width: '100%'}}
@@ -81,6 +105,7 @@ const NoteEdit: React.FC = () => {
                     value={tagsValue}
                     onChange={setTagsValue}
                 />
+                {/* 纯文本编辑器 */}
                 {
                     editorType === FILE_TYPE.text && (
                         <Input.TextArea
@@ -88,7 +113,6 @@ const NoteEdit: React.FC = () => {
                                 height: 'calc(100vh - 160px)'
                             }}
                             placeholder="内容"
-                            // autoSize={{minRows: 17, maxRows: 17}}
                             value={noteValue}
                             onChange={(e) => {
                                 setNoteValue(e.target.value)
@@ -97,9 +121,25 @@ const NoteEdit: React.FC = () => {
                         />
                     )
                 }
+                {/* Markdown 编辑器 */}
                 {
                     editorType === FILE_TYPE.Markdown && (
                         <ToastUIEditor
+                            style={{
+                                height: 'calc(100vh - 160px)'
+                            }}
+                            value={noteValue}
+                            onChange={(v: string) => {
+                                setNoteValue(v)
+                                writeNoteAsync(v)
+                            }}
+                        />
+                    )
+                }
+                {/* 富文本 HTML 编辑器 */}
+                {
+                    editorType === FILE_TYPE.Html && (
+                        <HtmlEditor
                             style={{
                                 height: 'calc(100vh - 160px)'
                             }}

@@ -1,3 +1,11 @@
+/**
+ * 新建笔记/分组弹窗
+ *
+ * 通过 Radio 切换创建类型（笔记/分组）：
+ * - 笔记模式：选择目标分组 + 输入文件名 + 选择文件类型（.txt/.md）
+ * - 分组模式：仅输入分组名
+ * - 创建前检查同目录下是否有重名
+ */
 import React, {memo, useMemo} from "react";
 import {Button, Modal, Form, Input, Flex, Space, Radio, Select} from "antd";
 import useNoteInfo from "../../hooks/useNoteInfo";
@@ -167,6 +175,10 @@ const CreateNewModal: React.FC<IProps> = (props) => {
                                                 {
                                                     label: 'Md文档',
                                                     value: FILE_TYPE.Markdown,
+                                                },
+                                                {
+                                                    label: 'HTML文档',
+                                                    value: FILE_TYPE.Html,
                                                 },
                                             ]}
                                         />

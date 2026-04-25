@@ -1,5 +1,14 @@
+/**
+ * 笔记树组件
+ *
+ * 渲染侧边栏中的笔记分组树形菜单，支持：
+ * - 右键菜单删除/重命名（分组和笔记）
+ * - "新建笔记"按钮打开创建弹窗
+ * - 点击笔记导航到编辑页
+ * - 首次挂载自动展开所有分组
+ */
 import React, {memo, useState, useMemo, useEffect, useRef} from "react";
-import {Menu, Dropdown, Modal, Input} from "antd";
+import {Menu, Dropdown, Modal, Input, message} from "antd";
 import type {MenuProps} from 'antd';
 import {useNavigate} from "react-router";
 import useNoteInfo from "../../hooks/useNoteInfo";
@@ -18,6 +27,7 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
         groupsMap,
         setGroupsConfig,
     } = useNoteInfo()
+    // 搜索过滤后的分组列表，优先使用父组件传入的 filteredGroups
     const groups = filteredGroups || allGroups;
 
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -35,6 +45,10 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
     const [renameTarget, setRenameTarget] = useState<{ key: string; name: string; type: 'note' | 'group' } | null>(null);
     const [renameValue, setRenameValue] = useState('');
 
+    /**
+     * 构建 Ant Design Menu 所需的 items 树
+     * 每个分组和笔记包裹在 Dropdown 中以支持右键菜单（删除/重命名）
+     */
     const items = useMemo(() => {
         return groups.map((group) => {
             return {
@@ -102,6 +116,7 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
         })
     }, [groups]);
 
+    /** 选中菜单项 → 导航到对应笔记 */
     const onSelect: MenuProps['onSelect'] = (e) => {
         setSelectedKeys(e.selectedKeys)
         navigate(`/home/note/${e.key}`)
@@ -110,30 +125,29 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
         setOpenKeys(_openKeys)
     };
 
-    // 创建新分组
+    /** 创建新分组：更新 groupsConfig 并创建磁盘目录 */
     const createNewGroup = async (data: IGroupsItem) => {
         const _groups = [...groups, data];
         const _groupsConfig = {
             groups: _groups,
         };
         setGroupsConfig(_groupsConfig)
-        await Promise.all([
-            // 重新生成groups.json文件
+        const [updateResult, createResult] = await Promise.all([
             window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
-            // 创建笔记文件
             window.electronAPI.createNoteAsync({
                 paths: [data.name],
                 type: 'group',
             })
-        ])
+        ]);
+        if (!updateResult?.success) console.error('创建分组失败:', updateResult?.error);
+        if (!createResult?.success) console.error('创建分组目录失败:', createResult?.error);
     }
 
-    // 在已有分组下创建新笔记
+    /** 在已有分组下创建新笔记：插入 children 并创建磁盘文件 */
     const createNewNoteInGroup = async (data: INoteItem, groupKey: string) => {
         const targetGroup = {...(groupsMap[groupKey] || {})} as IGroupsItemMap;
         const newGroups = [...groups].map((item) => {
             if (item.key === groupKey) {
-                // 往对应的分组位置插入新的笔记
                 if (!item.children) {
                     item.children = [];
                 }
@@ -145,16 +159,17 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
             groups: newGroups,
         }
         setGroupsConfig(_groupsConfig)
-        await Promise.all([
-            // 重新生成groups.json文件
+        const [updateResult, createResult] = await Promise.all([
             window.electronAPI.updateGroupsConfigAsync(_groupsConfig),
-            // 创建笔记文件
             window.electronAPI.createNoteAsync({
                 paths: [targetGroup.name, `${data.name}`],
                 type: 'file',
                 content: '',
             })
-        ])
+        ]);
+        if (!updateResult?.success) console.error('创建笔记失败:', updateResult?.error);
+        if (!createResult?.success) console.error('创建笔记文件失败:', createResult?.error);
+        // 创建后自动导航到新笔记并展开所在分组
         navigate(`/home/note/${data.key}`)
         setSelectedKeys([data.key])
         setOpenKeys((pre) => {
@@ -162,6 +177,7 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
         })
     }
 
+    /** 删除分组（含确认弹窗），物理删除目录 + 更新 groups.json */
     const deleteGroup = async (groupKey: string) => {
         Modal.confirm({
             title: '提示',
@@ -169,12 +185,17 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
             okText: '确认',
             cancelText: '取消',
             onOk: async () => {
-                const newGroupsConfig = await window.electronAPI.deleteGroupAsync(groupKey);
-                setGroupsConfig(newGroupsConfig)
+                const result = await window.electronAPI.deleteGroupAsync(groupKey);
+                if (result?.success && result.data) {
+                    setGroupsConfig(result.data);
+                } else {
+                    message.error(result?.error || '删除失败');
+                }
             },
         })
     }
 
+    /** 删除分组内的单个笔记（含确认弹窗） */
     const deleteNoteInGroup = async (noteKey: string) => {
         Modal.confirm({
             title: '提示',
@@ -182,21 +203,26 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
             okText: '确认',
             cancelText: '取消',
             onOk: async () => {
-                const newGroupsConfig = await window.electronAPI.deleteNoteInGroupAsync(noteKey)
-                setGroupsConfig(newGroupsConfig)
+                const result = await window.electronAPI.deleteNoteInGroupAsync(noteKey);
+                if (result?.success && result.data) {
+                    setGroupsConfig(result.data);
+                } else {
+                    message.error(result?.error || '删除失败');
+                }
             },
         })
     }
 
+    /** 重命名确认：根据 target.type 调用 renameNoteAsync 或 renameGroupAsync */
     const handleRenameOk = async () => {
         if (!renameTarget || !renameValue.trim()) return;
-        try {
-            const newGroupsConfig = renameTarget.type === 'note'
-                ? await window.electronAPI.renameNoteAsync(renameTarget.key, renameValue.trim())
-                : await window.electronAPI.renameGroupAsync(renameTarget.key, renameValue.trim());
-            setGroupsConfig(newGroupsConfig);
-        } catch (err) {
-            console.error('重命名失败:', err);
+        const result = renameTarget.type === 'note'
+            ? await window.electronAPI.renameNoteAsync(renameTarget.key, renameValue.trim())
+            : await window.electronAPI.renameGroupAsync(renameTarget.key, renameValue.trim());
+        if (result?.success && result.data) {
+            setGroupsConfig(result.data);
+        } else {
+            message.error(result?.error || '重命名失败');
         }
         setRenameVisible(false);
         setRenameTarget(null);
@@ -204,6 +230,7 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
 
     return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            {/* 新建笔记按钮 */}
             <div style={{ padding: '0 12px 8px' }}>
                 <button
                     className="new-note-btn"
@@ -212,6 +239,7 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
                     + 新建笔记
                 </button>
             </div>
+            {/* 笔记树菜单 */}
             <div className="scrollable" style={{ flex: 1 }}>
                 <Menu
                     style={{ border: 'none', background: 'transparent' }}
@@ -224,12 +252,14 @@ const NoteGroups: React.FC<NoteGroupsProps> = ({ filteredGroups, searchTerm }) =
                     items={items}
                 />
             </div>
+            {/* 新建笔记/分组弹窗 */}
             <CreateNewModal
                 visible={isModalOpen}
                 visibleChange={setIsModalOpen}
                 createNewGroup={createNewGroup}
                 createNewNoteInGroup={createNewNoteInGroup}
             />
+            {/* 重命名弹窗 */}
             <Modal
                 title="重命名"
                 open={renameVisible}

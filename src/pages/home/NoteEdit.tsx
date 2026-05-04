@@ -9,22 +9,25 @@
  * 标签通过 Ant Design Select mode="tags" 管理，变更实时持久化。
  * 笔记内容通过 3 秒防抖自动保存。
  */
-import React, {useEffect, useState, memo, useRef} from "react";
+import React, {useEffect, useState, memo, useRef, useMemo} from "react";
 import {
     Select,
     Input,
     Flex,
+    Button,
 } from "antd";
+import {ArrowLeftOutlined} from "@ant-design/icons";
 import ToastUIEditor from "../components/ToastUIEditor";
 import HtmlEditor from "./components/HtmlEditor";
 import {FILE_TYPE} from "../../utils/Enums";
-import {useParams} from "react-router";
+import {useParams, useNavigate} from "react-router";
 import type {INoteItem} from "../../types";
 import {debounce} from "../../utils/tool";
 import useNoteInfo from "../hooks/useNoteInfo";
 
 const NoteEdit: React.FC = () => {
     const params = useParams();
+    const navigate = useNavigate();
     const {
         groupsMap,
         groups,
@@ -40,6 +43,13 @@ const NoteEdit: React.FC = () => {
     const [tagsValue, setTagsValue] = useState<string[]>([]);
     /** 笔记正文内容 */
     const [noteValue, setNoteValue] = useState('');
+
+    /** 标签池：从所有笔记中收集已有标签供下拉选择 */
+    const tagPool = useMemo(() => {
+        const set = new Set<string>();
+        groups.forEach(g => (g.children || []).forEach(n => (n.tags || []).forEach(t => set.add(t))));
+        return Array.from(set).sort();
+    }, [groups]);
 
     // 路由参数变化时（切换笔记），重新加载笔记内容和元数据
     useEffect(() => {
@@ -102,6 +112,19 @@ const NoteEdit: React.FC = () => {
 
     return (
         <div className="scrollable" key={params.id} style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 10 }}>
+            {/* 顶部：返回按钮 + 文件名 */}
+            <Flex align="center" gap={8} style={{ marginBottom: 8, flexShrink: 0 }}>
+                <Button
+                    type="text"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() => navigate('/home')}
+                    size="small"
+                />
+                <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--text-primary)' }}>
+                    {currentNote?.name || ''}
+                </span>
+            </Flex>
+
             {/* 编辑器区域：flex: 1 填充剩余高度 */}
             {
                 editorType === FILE_TYPE.text && (
@@ -140,13 +163,14 @@ const NoteEdit: React.FC = () => {
                     />
                 )
             }
-            {/* 标签输入（支持自由输入 + 多选），紧跟编辑器下方 */}
+            {/* 标签输入（支持自由输入 + 从已有标签中选择） */}
             <Select
                 mode="tags"
                 style={{ width: '100%', marginTop: 10, flexShrink: 0 }}
-                placeholder="Tags Mode"
+                placeholder="添加标签..."
                 value={tagsValue}
                 onChange={setTagsValue}
+                options={tagPool.map(t => ({ label: t, value: t }))}
             />
         </div>
     );

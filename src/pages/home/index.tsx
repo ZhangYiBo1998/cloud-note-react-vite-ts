@@ -6,25 +6,74 @@
  * - 内容搜索：通过 IPC searchNotesAsync 全文搜索，300ms 防抖
  */
 import React, {useState, useMemo, useEffect, memo, useCallback, useRef, useContext} from "react";
-import {Flex, List, Typography} from "antd";
-import {FileTextOutlined} from "@ant-design/icons";
+import {Flex, List, Typography, Tooltip, message} from "antd";
+import {FileTextOutlined, CloudSyncOutlined, LoadingOutlined} from "@ant-design/icons";
 import {Outlet, useNavigate} from "react-router";
 import NoteSearch from "./components/NoteSearch";
 import NoteGroups from "./components/NoteGroups";
+import TagPanel from "./components/TagPanel";
+import CreateNewModal from "./components/CreateNewModal";
 import SyncStatusBar from "../../components/SyncStatusBar";
 import {useSyncStatus} from "../../hooks/useSyncStatus";
-import {SidebarContext} from "../../utils/context";
+import {SidebarContext, SettingsContext, MemoFilterContext} from "../../utils/context";
 import "./index.scss"
 import useNoteInfo from "../hooks/useNoteInfo";
 import type {SearchResultItem} from "../../types/global";
+import type {INoteItem, IGroupsItemMap} from "../../types";
 
 const Home: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchType, setSearchType] = useState('fileName');
-    const { groups } = useNoteInfo();
+    const { groups, groupsMap, setGroupsConfig } = useNoteInfo();
     const sync = useSyncStatus();
     const navigate = useNavigate();
     const { width, collapsed, isResizing, onDragStart } = useContext(SidebarContext);
+    const { settings } = useContext(SettingsContext);
+    const panelMode = settings.leftPanelMode || 'group';
+
+    /** 标签面板：当前选中的标签（null = 全部） */
+    const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    /** 分组面板：当前选中的分组 key（null = 全部） */
+    const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
+    /** 标签模式下的新建笔记弹窗 */
+    const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+
+    /** 标签模式下创建笔记（无需关注菜单展开状态） */
+    const createNewNoteInGroupForTag = async (data: INoteItem, groupKey: string) => {
+        const targetGroup = { ...(groupsMap[groupKey] || {}) } as IGroupsItemMap;
+        const newGroups = groups.map((item) => {
+            if (item.key === groupKey) {
+                return { ...item, children: [...(item.children || []), data] };
+            }
+            return item;
+        });
+        const _groupsConfig = { groups: newGroups };
+        setGroupsConfig(_groupsConfig);
+        const [updateResult, createResult] = await Promise.all([
+            window.electronAPI?.updateGroupsConfigAsync(_groupsConfig),
+            window.electronAPI?.createNoteAsync({
+                paths: [targetGroup.name, `${data.name}`],
+                type: 'file',
+                content: '',
+            }),
+        ]);
+        if (!updateResult?.success) console.error('创建笔记失败:', updateResult?.error);
+        if (!createResult?.success) console.error('创建笔记文件失败:', createResult?.error);
+        navigate(`/home/note/${data.key}`);
+    };
+
+    /** 标签选中：切换过滤 + 如果在编辑页则回到列表 */
+    const handleTagSelect = useCallback((tag: string | null) => {
+        setSelectedTag(tag);
+        navigate('/home');
+    }, [navigate]);
+
+    /** 标签删除回调：如果删除的是当前选中标签，重置选中 */
+    const handleTagDelete = useCallback((tagName: string) => {
+        if (selectedTag === tagName) {
+            setSelectedTag(null);
+        }
+    }, [selectedTag]);
 
     /** 内容搜索结果 */
     const [contentResults, setContentResults] = useState<SearchResultItem[]>([]);
@@ -107,7 +156,7 @@ const Home: React.FC = () => {
                     />
                 </Flex>
 
-                {/* 内容搜索模式下展示搜索结果列表，否则展示笔记树 */}
+                {/* 内容搜索模式下展示搜索结果列表，否则根据面板模式展示标签或分组树 */}
                 {searchType === 'content' && searchTerm ? (
                     <div className="scrollable" style={{ flex: 1, padding: '0 8px' }}>
                         {isSearching ? (
@@ -166,6 +215,45 @@ const Home: React.FC = () => {
                             />
                         )}
                     </div>
+                ) : panelMode === 'tag' ? (
+                    <>
+                        {/* 标签模式工具栏：新建笔记 + 手动同步 */}
+                        <div style={{ padding: '0 12px 8px' }}>
+                            <Flex gap={6}>
+                                <button
+                                    className="new-note-btn"
+                                    style={{ flex: 1 }}
+                                    onClick={() => setIsTagModalOpen(true)}
+                                >
+                                    + 新建笔记
+                                </button>
+                                <Tooltip title="同步到云端">
+                                    <button
+                                        className="new-note-btn"
+                                        style={{ width: 36, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        onClick={sync.pushNow}
+                                    >
+                                        {sync.status === 'syncing'
+                                            ? <LoadingOutlined style={{ fontSize: 14 }} />
+                                            : <CloudSyncOutlined style={{ fontSize: 14 }} />
+                                        }
+                                    </button>
+                                </Tooltip>
+                            </Flex>
+                        </div>
+                        <TagPanel
+                            selectedTag={selectedTag}
+                            onTagSelect={handleTagSelect}
+                            onTagDelete={handleTagDelete}
+                        />
+                        <CreateNewModal
+                            visible={isTagModalOpen}
+                            visibleChange={setIsTagModalOpen}
+                            createNewGroup={async () => {}}
+                            createNewNoteInGroup={createNewNoteInGroupForTag}
+                            hideTypeSelector
+                        />
+                    </>
                 ) : (
                     <NoteGroups
                         filteredGroups={filteredGroups}
@@ -198,7 +286,7 @@ const Home: React.FC = () => {
                     }}
                 />
             )}
-            {/* 右侧内容区：笔记编辑器路由出口 */}
+            {/* 右侧内容区：备忘列表或笔记编辑器 */}
             <Flex
                 className="content scrollable"
                 vertical
@@ -207,7 +295,15 @@ const Home: React.FC = () => {
                     background: 'var(--content-bg, #ffffff)',
                 }}
             >
-                <Outlet/>
+                <MemoFilterContext.Provider value={{
+                    selectedTag,
+                    setSelectedTag,
+                    selectedGroupKey,
+                    setSelectedGroupKey,
+                    panelMode,
+                }}>
+                    <Outlet/>
+                </MemoFilterContext.Provider>
             </Flex>
         </Flex>
     );

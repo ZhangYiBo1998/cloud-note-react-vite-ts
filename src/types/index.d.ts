@@ -4,6 +4,7 @@ import type {Dispatch, SetStateAction} from "react";
 export interface ISettings {
     theme: string;
     closeType: 'hide' | 'quit';
+    leftPanelMode: 'group' | 'tag';
 }
 
 /** 外观/行为设置上下文值 */
@@ -27,6 +28,7 @@ export interface IConfigData {
     backupIntervalMinutes?: number;
     globalShortcut?: string;
     devToolsShortcut?: string;
+    leftPanelMode?: 'group' | 'tag';
 }
 
 /** 分组/笔记通用字段 */
@@ -90,4 +92,25 @@ export interface ISidebarContextValue {
     toggleCollapse: () => void;
     onDragStart: (e: React.MouseEvent) => void;
     isResizing: boolean;
+}
+
+/** 扁平化备忘录项（含分组名），供 MemoList 展示 */
+export interface IMemoItem extends INoteItem {
+    parent: string;
+    parentName: string;
+}
+
+/** 标签面板中的标签条目 */
+export interface ITagEntry {
+    name: string;
+    count: number;
+}
+
+/** 备忘过滤上下文 */
+export interface IMemoFilterContextValue {
+    selectedTag: string | null;
+    setSelectedTag: (tag: string | null) => void;
+    selectedGroupKey: string | null;
+    setSelectedGroupKey: (key: string | null) => void;
+    panelMode: 'group' | 'tag';
 }

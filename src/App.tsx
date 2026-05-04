@@ -33,6 +33,7 @@ const App: React.FC = () => {
     const [settings, setSettings] = useState<ISettings>({
         theme: 'light',
         closeType: 'hide',
+        leftPanelMode: 'group',
     });
 
     /** 侧边栏可拖拽/折叠状态 */
@@ -102,6 +103,7 @@ const App: React.FC = () => {
                 setSettings({
                     theme: (_config.theme as 'light' | 'dark') || 'light',
                     closeType: (_config.closeType as 'hide' | 'quit') || 'hide',
+                    leftPanelMode: (_config.leftPanelMode as 'group' | 'tag') || 'group',
                 });
 
                 // 有存档目录时才加载笔记列表
@@ -123,14 +125,15 @@ const App: React.FC = () => {
         init();
     }, []);
 
-    // 主题/关闭行为变更时自动持久化到 config.json（仅在 init 完成后生效）
+    // 主题/关闭行为/面板模式变更时自动持久化到 config.json（仅在 init 完成后生效）
     useEffect(() => {
         if (!isInitialized.current) return;
         window.electronAPI?.updateConfigJsonAsync({
             theme: settings.theme,
             closeType: settings.closeType,
+            leftPanelMode: settings.leftPanelMode,
         });
-    }, [settings.theme, settings.closeType]);
+    }, [settings.theme, settings.closeType, settings.leftPanelMode]);
 
     /**
      * 将 groups 数组扁平化为 key → item 映射

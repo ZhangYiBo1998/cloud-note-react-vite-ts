@@ -21,6 +21,7 @@ export interface AppConfig {
   backupIntervalMinutes?: number;
   globalShortcut?: string;
   devToolsShortcut?: string;
+  leftPanelMode?: 'group' | 'tag';
 }
 
 /** 单个笔记条目 */

@@ -5,7 +5,7 @@
  * Git 地址通过 git remote get-url origin 动态获取，不依赖 config.json 缓存。
  */
 import React, {useEffect, memo, useState, useContext, useCallback} from "react";
-import {Card, Switch, Form, Input, Button, Modal, Flex, Typography, message, Space, Select} from 'antd';
+import {Card, Switch, Form, Input, Button, Modal, Flex, Typography, message, Space, Select, Radio} from 'antd';
 import {
     EllipsisOutlined,
     EditOutlined,
@@ -287,6 +287,16 @@ const Setting: React.FC = () => {
                         <Form.Item label="关闭应用时最小化到系统托盘" style={{ marginBottom: 16 }}>
                             <Switch value={settings.closeType === 'hide'}
                                     onChange={(checked) => setSettings({...settings, closeType: checked ? 'hide' : 'quit'})}/>
+                        </Form.Item>
+                        {/* 左侧面板模式 */}
+                        <Form.Item label="左侧面板模式" style={{ marginBottom: 16 }}>
+                            <Radio.Group
+                                value={settings.leftPanelMode || 'group'}
+                                onChange={(e) => setSettings({...settings, leftPanelMode: e.target.value as 'group' | 'tag'})}
+                            >
+                                <Radio value="group">按分组分类</Radio>
+                                <Radio value="tag">按标签分类</Radio>
+                            </Radio.Group>
                         </Form.Item>
                         {/* 全局快捷键（显示/隐藏应用） */}
                         <Form.Item label="全局快捷键（显示/隐藏应用）" style={{ marginBottom: 16 }}>

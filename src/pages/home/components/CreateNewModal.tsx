@@ -18,6 +18,7 @@ interface IFieldValues {
     groupKey?: string;
     fileName?: string;
     fileType?: string;
+    tags?: string[];
 }
 
 interface IProps {
@@ -25,6 +26,8 @@ interface IProps {
     visibleChange: (visible: boolean) => void;
     createNewGroup: (data: IGroupsItem) => Promise<void>;
     createNewNoteInGroup: (data: INoteItem, groupKey: string) => Promise<void>;
+    /** 隐藏类型选择器，强制仅创建笔记（标签模式使用） */
+    hideTypeSelector?: boolean;
 }
 
 const CreateNewModal: React.FC<IProps> = (props) => {
@@ -33,6 +36,7 @@ const CreateNewModal: React.FC<IProps> = (props) => {
         visibleChange,
         createNewGroup,
         createNewNoteInGroup,
+        hideTypeSelector,
     } = props;
 
     const {
@@ -52,6 +56,14 @@ const CreateNewModal: React.FC<IProps> = (props) => {
             }
         })
     }, [groups])
+
+    /** 标签池：从已有笔记中收集，供选择已有标签 */
+    const tagPool = useMemo(() => {
+        const set = new Set<string>();
+        groups.forEach(g => (g.children || []).forEach(n => (n.tags || []).forEach(t => set.add(t))));
+        return Array.from(set).sort();
+    }, [groups]);
+
     // 创建分组
     const createGroup = async (values: IFieldValues) => {
         const now = Date.now();
@@ -104,7 +116,7 @@ const CreateNewModal: React.FC<IProps> = (props) => {
             name: `${fileName}${values.fileType}`,
             createTime: now,
             updateTime: now,
-            tags: [],
+            tags: values.tags || [],
         }, groupKey as string)
         visibleChange(false);
     }
@@ -113,7 +125,7 @@ const CreateNewModal: React.FC<IProps> = (props) => {
         <>
 
             <Modal
-                title="新建分组"
+                title={hideTypeSelector ? "新建笔记" : "新建分组"}
                 open={visible}
                 onCancel={() => visibleChange(false)}
                 footer={null}
@@ -123,7 +135,7 @@ const CreateNewModal: React.FC<IProps> = (props) => {
                     labelCol={{span: 4}}
                     wrapperCol={{span: 19}}
                     onFinish={(values) => {
-                        if (values.type === 1) {
+                        if (!hideTypeSelector && values.type === 1) {
                             createGroup(values);
                         } else {
                             createNote(values);
@@ -132,21 +144,24 @@ const CreateNewModal: React.FC<IProps> = (props) => {
                     initialValues={{
                         type: 0,
                         groupKey: groupOptions[0]?.value || '',
-                        fileType: FILE_TYPE.text
+                        fileType: FILE_TYPE.text,
+                        tags: [],
                     }}
                 >
-                    <Form.Item<IFieldValues>
-                        label="类型"
-                        name="type"
-                    >
-                        <Radio.Group
-                            options={[
-                                {value: 0, label: '笔记'},
-                                {value: 1, label: '分组'},
-                            ]}
-                        />
-                    </Form.Item>
-                    {type === 0 && (
+                    {!hideTypeSelector && (
+                        <Form.Item<IFieldValues>
+                            label="类型"
+                            name="type"
+                        >
+                            <Radio.Group
+                                options={[
+                                    {value: 0, label: '笔记'},
+                                    {value: 1, label: '分组'},
+                                ]}
+                            />
+                        </Form.Item>
+                    )}
+                    {(type === 0 || hideTypeSelector) && (
                         <>
                             <Form.Item<IFieldValues>
                                 label="分组"
@@ -186,9 +201,19 @@ const CreateNewModal: React.FC<IProps> = (props) => {
                                     <Input />
                                 </Space.Compact>
                             </Form.Item>
+                            <Form.Item<IFieldValues>
+                                label="标签"
+                                name="tags"
+                            >
+                                <Select
+                                    mode="tags"
+                                    placeholder="选择或输入标签"
+                                    options={tagPool.map(t => ({ label: t, value: t }))}
+                                />
+                            </Form.Item>
                         </>
                     )}
-                    {type === 1 && (
+                    {type === 1 && !hideTypeSelector && (
                         <Form.Item<IFieldValues>
                             label="分组名称"
                             name="groupName"

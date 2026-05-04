@@ -7,6 +7,7 @@ import APP from "../App";
 import Home from "../pages/home";
 import Setting from "../pages/setting";
 import NoteEdit from "../pages/home/NoteEdit";
+import MemoList from "../pages/home/components/MemoList";
 
 const router = createHashRouter([
     {
@@ -14,16 +15,16 @@ const router = createHashRouter([
         element: <APP />,
         children: [
             {
-                index: true, // 添加 index 路由
-                element: <Navigate to="/home" replace />, // 重定向到 /home
+                index: true,
+                element: <Navigate to="/home" replace />,
             },
             {
                 path: "home",
                 element: <Home />,
                 children: [
                     {
-                        index: true, // 添加 index 路由
-                        element: <NoteEdit />,
+                        index: true,
+                        element: <MemoList />,
                     },
                     {
                         path: "note/:id",

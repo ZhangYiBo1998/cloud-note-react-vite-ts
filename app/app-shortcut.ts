@@ -19,7 +19,11 @@ export function setAppMainWindow(win: BrowserWindow | null): void {
 function toggleWindow(): void {
   if (!_mainWindow) return;
   if (_mainWindow.isVisible()) {
-    hideMainWindow(_mainWindow);
+    if (_mainWindow.isFocused()) {
+      hideMainWindow(_mainWindow);
+    } else {
+      _mainWindow.focus();
+    }
   } else {
     showMainWindow(_mainWindow);
   }

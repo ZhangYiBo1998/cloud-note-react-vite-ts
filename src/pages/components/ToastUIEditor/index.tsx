@@ -42,6 +42,8 @@ const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
     } = props;
     const editorDomRef = useRef<HTMLDivElement | null>(null);
     const editorInsRef = useRef<IEditorProps>({} as IEditorProps);
+    // 标记 value 变化是否来自编辑器自身（用户输入），避免重复 setMarkdown 导致光标跳转
+    const isInternalChangeRef = useRef(false);
 
     useEffect(() => {
         editorInsRef.current = new Editor({
@@ -62,6 +64,7 @@ const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
             ],
             events: {
                 change: () => {
+                    isInternalChangeRef.current = true;
                     onChange?.(editorInsRef.current.getMarkdown())
                 }
             },
@@ -72,9 +75,13 @@ const ToastUIEditor: React.FC<IToastUIEditorProps> = (props) => {
         }
     }, []);
 
-    // 切换笔记时同步编辑器内容
+    // 仅外部 value 变化时（切换笔记）同步编辑器内容，跳过编辑器自身触发的变更
     useEffect(() => {
-        if (editorInsRef.current?.setMarkdown && value) {
+        if (isInternalChangeRef.current) {
+            isInternalChangeRef.current = false;
+            return;
+        }
+        if (editorInsRef.current?.setMarkdown) {
             editorInsRef.current.setMarkdown(value);
         }
     }, [value]);

@@ -141,9 +141,14 @@ export function registerGroupsHandlers(): void {
         return errorResult('重命名失败：分组不存在');
       }
 
+      // 保留原文件后缀名，前端输入的 newName 只影响文件名本体
+      const oldExt = path.extname(noteInfo.name);
+      const newBaseName = path.basename(newName, oldExt);
+      const finalName = newBaseName + oldExt;
+
       const saveDir = await getAppSaveDirectoryAsync();
       const oldPath = path.join(saveDir, targetGroup.name, noteInfo.name);
-      const newPath = path.join(saveDir, targetGroup.name, newName);
+      const newPath = path.join(saveDir, targetGroup.name, finalName);
 
       await fs.rename(oldPath, newPath);
       const groupsConfig = await getGroupsConfigAsync();
@@ -151,7 +156,7 @@ export function registerGroupsHandlers(): void {
         if (group.key === noteInfo.parent) {
           group.children = group.children.map((note) => {
             if (note.key === noteKey) {
-              return { ...note, name: newName, updateTime: Date.now() };
+              return { ...note, name: finalName, updateTime: Date.now() };
             }
             return note;
           });

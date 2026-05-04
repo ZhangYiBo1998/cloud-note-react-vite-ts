@@ -44,8 +44,10 @@ const NoteEdit: React.FC = () => {
     // 路由参数变化时（切换笔记），重新加载笔记内容和元数据
     useEffect(() => {
         if (!params.id) {
+            setNoteValue('');
             return;
         }
+        setNoteValue('');
         window.electronAPI?.readNoteAsync(params.id).then((result) => {
             if (!result?.success) {
                 console.error('读取笔记失败:', result?.error);

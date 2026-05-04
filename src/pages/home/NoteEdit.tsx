@@ -111,7 +111,7 @@ const NoteEdit: React.FC = () => {
     }
 
     return (
-        <div className="scrollable" key={params.id} style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 10 }}>
+        <div key={params.id} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: 10 }}>
             {/* 顶部：返回按钮 + 文件名 */}
             <Flex align="center" gap={8} style={{ marginBottom: 8, flexShrink: 0 }}>
                 <Button

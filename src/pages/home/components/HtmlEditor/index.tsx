@@ -57,7 +57,7 @@ const HtmlEditor: React.FC<HtmlEditorProps> = ({ value, onChange, style }) => {
   const toggleBlockquote = useCallback(() => editor?.chain().focus().toggleBlockquote().run(), [editor]);
 
   return (
-    <div style={style}>
+    <div style={{ ...style, display: 'flex', flexDirection: 'column' }}>
       {/* 格式化工具栏 */}
       <div className="html-editor-toolbar" style={{
         border: '1px solid var(--border-color, #d2d2d7)',
@@ -67,6 +67,7 @@ const HtmlEditor: React.FC<HtmlEditorProps> = ({ value, onChange, style }) => {
         background: 'var(--sidebar-bg, #fafafa)',
         display: 'flex',
         flexWrap: 'wrap',
+        flexShrink: 0,
       }}>
         <Space size={2} wrap>
           <Button
@@ -132,12 +133,13 @@ const HtmlEditor: React.FC<HtmlEditorProps> = ({ value, onChange, style }) => {
           </Button>
         </Space>
       </div>
-      {/* 编辑器内容区 */}
+      {/* 编辑器内容区：flex: 1 填充剩余高度，超出滚动 */}
       <div style={{
+        flex: 1,
+        minHeight: 0,
         border: '1px solid var(--border-color, #d2d2d7)',
         borderRadius: '0 0 8px 8px',
         overflow: 'auto',
-        height: style?.height ? `calc(${typeof style.height === 'number' ? style.height + 'px' : style.height} - 50px)` : 'auto',
         background: 'var(--content-bg, #ffffff)',
         color: 'var(--text-primary, #1d1d1f)',
       }}>

@@ -17,7 +17,7 @@ import {
     Button,
 } from "antd";
 import {ArrowLeftOutlined} from "@ant-design/icons";
-import ToastUIEditor from "../components/ToastUIEditor";
+import MilkdownEditor from "../components/MilkdownEditor";
 import HtmlEditor from "./components/HtmlEditor";
 import {FILE_TYPE} from "../../utils/Enums";
 import {useParams, useNavigate} from "react-router";
@@ -141,7 +141,7 @@ const NoteEdit: React.FC = () => {
             }
             {
                 editorType === FILE_TYPE.markdown && (
-                    <ToastUIEditor
+                    <MilkdownEditor
                         style={{ flex: 1, minHeight: 0 }}
                         value={noteValue}
                         onChange={(v: string) => {
